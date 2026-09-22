@@ -1,0 +1,11 @@
+{
+  "name": "quizportal-exam-e2e",
+  "private": true,
+  "description": "End-to-end test of the TOEIC exam page in real Chrome. See README.md.",
+  "scripts": {
+    "test": "node exam_test.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}

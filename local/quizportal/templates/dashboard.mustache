@@ -1,0 +1,158 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/dashboard
+
+    Test roster dashboard shown to a student after login.
+
+    Context variables required for this template:
+    * classname - string|null, label for the "Lop: ..." tag in the header.
+    * fullname, initials, logouturl - current user display info.
+    * stats - {total, completed, average|null}.
+    * hasquizzes - bool.
+    * quizzes - array of rows, see local_quizportal\local\dashboard_repository::build_row().
+}}
+<div class="quizportal-dashboard">
+
+    <header class="quizportal-dashboard__topbar">
+        <div class="quizportal-dashboard__topbar-left">
+            <div class="quizportal-dashboard__brand">
+                <div class="quizportal-dashboard__brand-mark">PT</div>
+                <div class="quizportal-dashboard__brand-name">PTEducation</div>
+            </div>
+            {{#classname}}
+                <div class="quizportal-dashboard__class-tag">Lớp: {{classname}}</div>
+            {{/classname}}
+        </div>
+        <div class="quizportal-dashboard__topbar-right">
+            <div class="quizportal-dashboard__avatar">{{initials}}</div>
+            <span class="quizportal-dashboard__user-name">{{fullname}}</span>
+            <a class="quizportal-dashboard__logout" href="{{logouturl}}">Đăng xuất</a>
+        </div>
+    </header>
+
+    <main class="quizportal-dashboard__main">
+        <h1>Danh sách bài thi</h1>
+        <p class="quizportal-dashboard__lede">Đề thi mô phỏng cấu trúc TOEIC Listening &amp; Reading Test, có âm thanh và hình ảnh minh hoạ, theo chuẩn ETS.</p>
+
+        <dl class="quizportal-dashboard__stats">
+            <div class="quizportal-dashboard__stat">
+                <dt>TỔNG SỐ ĐỀ</dt>
+                <dd>{{stats.total}}</dd>
+            </div>
+            <div class="quizportal-dashboard__stat">
+                <dt>ĐÃ HOÀN THÀNH</dt>
+                <dd>{{stats.completed}}</dd>
+            </div>
+            {{#stats.average}}
+                <div class="quizportal-dashboard__stat">
+                    <dt>ĐIỂM TRUNG BÌNH</dt>
+                    <dd>{{stats.average}}</dd>
+                </div>
+            {{/stats.average}}
+        </dl>
+
+        <div class="quizportal-dashboard__tabs" role="group" aria-label="Lọc bài thi theo trạng thái">
+            <button class="quizportal-dashboard__tab" type="button" aria-pressed="true" data-filter="all">Tất cả</button>
+            <button class="quizportal-dashboard__tab" type="button" aria-pressed="false" data-filter="open">Đang mở</button>
+            <button class="quizportal-dashboard__tab" type="button" aria-pressed="false" data-filter="completed">Đã hoàn thành</button>
+            <button class="quizportal-dashboard__tab" type="button" aria-pressed="false" data-filter="upcoming">Sắp mở</button>
+        </div>
+
+        {{#hasquizzes}}
+        <ul class="quizportal-dashboard__roster" id="quizportal-roster">
+            {{#quizzes}}
+            <li>
+                <div class="quizportal-dashboard__row" data-status="{{status}}">
+                    <div class="quizportal-dashboard__idx">{{idx}}</div>
+                    <div>
+                        <p class="quizportal-dashboard__title">{{title}}</p>
+                        <div class="quizportal-dashboard__meta">
+                            <span>{{totalquestions}} câu</span>
+                            {{#durationminutes}}<span>{{durationminutes}} phút</span>{{/durationminutes}}
+                        </div>
+                        {{#haspartdata}}
+                        <div class="quizportal-dashboard__partbar">
+                            {{#parts}}
+                            <div class="quizportal-dashboard__partbar-seg {{#islistening}}is-listening{{/islistening}}{{^islistening}}is-reading{{/islistening}}"
+                                 style="width:{{percent}}%" title="Part {{part}}: {{count}} câu"></div>
+                            {{/parts}}
+                        </div>
+                        {{/haspartdata}}
+                    </div>
+
+                    {{#iscompleted}}
+                    <div class="quizportal-dashboard__status is-completed">
+                        <span class="quizportal-dashboard__status-label">{{resultlabel}}</span>
+                        <span class="quizportal-dashboard__status-value">{{bestgrade}} / {{maxgrade}}</span>
+                        <div class="quizportal-dashboard__status-sub">Lượt làm: {{attemptsused}}/{{attemptsallowedlabel}}</div>
+                    </div>
+                    {{/iscompleted}}
+                    {{#isopen}}
+                    <div class="quizportal-dashboard__status is-open">
+                        <span class="quizportal-dashboard__status-label">HẠN NỘP</span>
+                        <span class="quizportal-dashboard__status-value">{{#timeclose}}{{timeclose}}{{/timeclose}}{{^timeclose}}Không giới hạn{{/timeclose}}</span>
+                        <div class="quizportal-dashboard__status-sub">Lượt làm: {{attemptsused}}/{{attemptsallowedlabel}}</div>
+                    </div>
+                    {{/isopen}}
+                    {{#isupcoming}}
+                    <div class="quizportal-dashboard__status is-upcoming">
+                        <span class="quizportal-dashboard__status-label">MỞ LÚC</span>
+                        <span class="quizportal-dashboard__status-value">{{timeopen}}</span>
+                    </div>
+                    {{/isupcoming}}
+                    {{#isclosed}}
+                    <div class="quizportal-dashboard__status is-closed">
+                        <span class="quizportal-dashboard__status-label">ĐÃ ĐÓNG</span>
+                        <span class="quizportal-dashboard__status-value">{{timeclose}}</span>
+                    </div>
+                    {{/isclosed}}
+
+                    <div class="quizportal-dashboard__actions">
+                        {{#iscompleted}}
+                            {{#reviewurl}}<a class="quizportal-dashboard__btn quizportal-dashboard__btn--primary" href="{{reviewurl}}">Xem kết quả</a>{{/reviewurl}}
+                            {{#canretry}}<a class="quizportal-dashboard__btn quizportal-dashboard__btn--ghost" href="{{viewurl}}">Làm lại</a>{{/canretry}}
+                        {{/iscompleted}}
+                        {{#isopen}}
+                            <a class="quizportal-dashboard__btn quizportal-dashboard__btn--primary" href="{{viewurl}}">Vào làm bài</a>
+                        {{/isopen}}
+                        {{#isupcoming}}
+                            <button class="quizportal-dashboard__btn" type="button" disabled>Chưa mở</button>
+                        {{/isupcoming}}
+                        {{#isclosed}}
+                            <button class="quizportal-dashboard__btn" type="button" disabled>Đã đóng</button>
+                        {{/isclosed}}
+                    </div>
+                </div>
+            </li>
+            {{/quizzes}}
+        </ul>
+        {{/hasquizzes}}
+        {{^hasquizzes}}
+        <div class="quizportal-dashboard__empty">Bạn chưa được giao đề thi nào trong các lớp đang tham gia.</div>
+        {{/hasquizzes}}
+
+        <p class="quizportal-dashboard__footnote">© 2026 PTEducation. Hệ thống luyện thi TOEIC nội bộ.</p>
+    </main>
+</div>
+
+{{#js}}
+require(['jquery'], function($) {
+    $('#quizportal-roster').closest('.quizportal-dashboard__main').find('.quizportal-dashboard__tab').on('click', function() {
+        var filter = $(this).data('filter');
+        $(this).siblings().attr('aria-pressed', 'false');
+        $(this).attr('aria-pressed', 'true');
+        $('#quizportal-roster > li').each(function() {
+            var status = $(this).find('.quizportal-dashboard__row').data('status');
+            var show = filter === 'all' || status === filter || (filter === 'all' && status === 'closed');
+            $(this).toggle(Boolean(show));
+        });
+    });
+});
+{{/js}}

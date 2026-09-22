@@ -1,0 +1,103 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/result_group
+
+    One group on the results page: the stimulus, each question with the answer
+    chosen and the right one, the explanation, and for Listening the script
+    (once for the whole conversation) and the stretch of recording to hear again.
+
+    Right and wrong are never told by colour alone: every question carries its
+    verdict in words, and every option a tag.
+
+    Context variables required for this template:
+    * index, part, heading, label, firstnumber, statuses - space separated statuses present
+    * flagged - the candidate flagged at least one question of the group
+    * islistening, sidebyside, stimulus, script
+    * hasaudio, start, end - seconds; end 0 means to the end of the recording
+    * questions - [{slot, number, flagged, status, statuslabel, text, options, lettersonly,
+                    chosenletter, rightletter, explanation}]
+
+    Example context (json):
+    {
+        "index": 0, "part": 1, "heading": "Part 1 — Mô tả tranh", "label": "Câu 1", "firstnumber": 1,
+        "statuses": "wrong", "flagged": true, "islistening": true, "sidebyside": false, "stimulus": null,
+        "script": "<p>M-Au: (A) ...</p>", "hasaudio": true, "start": 98, "end": 124,
+        "questions": [{"slot": 1, "number": 1, "flagged": true, "status": "wrong", "statuslabel": "Sai", "text": "",
+            "options": [{"letter": "A", "text": null, "isright": true, "ischosen": false, "iswrongchoice": false}],
+            "lettersonly": true, "chosenletter": "B", "rightletter": "A", "explanation": null}]
+    }
+}}
+<section class="quizportal-exam__group quizportal-result__group{{#sidebyside}} quizportal-exam__group--split{{/sidebyside}}"
+         id="nhom-{{index}}" data-region="group" data-index="{{index}}" data-part="{{part}}"
+         data-label="{{label}}" data-statuses="{{statuses}}" data-flagged="{{#flagged}}1{{/flagged}}{{^flagged}}0{{/flagged}}">
+    <header class="quizportal-result__group-head">
+        <div>
+            <p class="quizportal-result__eyebrow">{{heading}}</p>
+            <h3>{{label}}</h3>
+        </div>
+        {{#hasaudio}}
+            <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost quizportal-result__replay"
+                    data-action="replay" data-start="{{start}}" data-end="{{end}}" hidden>▶ Nghe lại đoạn này</button>
+        {{/hasaudio}}
+    </header>
+
+    <div class="quizportal-exam__group-body">
+        {{#stimulus}}
+            <div class="quizportal-exam__stimulus"><div class="qtext">{{{stimulus}}}</div></div>
+        {{/stimulus}}
+        <div class="quizportal-exam__questions">
+            {{#questions}}
+                <div class="quizportal-exam__q quizportal-result__q{{#status}} is-{{status}}{{/status}}{{#flagged}} is-flagged{{/flagged}}"
+                     id="cau-{{number}}" data-region="question">
+                    <div class="quizportal-exam__qside">
+                        <div class="quizportal-exam__qno" aria-hidden="true">{{number}}</div>
+                        {{#flagged}}
+                            <span class="quizportal-exam__flag is-on" aria-hidden="true">{{> local_quizportal/flag_icon }}</span>
+                        {{/flagged}}
+                    </div>
+                    <div class="quizportal-exam__qbody">
+                        <div class="qtext">{{{text}}}</div>
+                        <ul class="quizportal-result__options{{#lettersonly}} is-letters{{/lettersonly}}"
+                            aria-label="Các phương án của câu {{number}}">
+                            {{#options}}
+                                <li class="quizportal-result__option{{#isright}} is-right{{/isright}}{{#iswrongchoice}} is-wrongchoice{{/iswrongchoice}}{{#ischosen}} is-chosen{{/ischosen}}">
+                                    <span class="quizportal-exam__bubble">{{letter}}</span>
+                                    {{#text}}<span class="quizportal-result__option-text">{{{text}}}</span>{{/text}}
+                                    {{#isright}}<span class="quizportal-result__tag">Đáp án đúng</span>{{/isright}}
+                                    {{#iswrongchoice}}<span class="quizportal-result__tag">Bạn chọn</span>{{/iswrongchoice}}
+                                </li>
+                            {{/options}}
+                        </ul>
+                        <p class="quizportal-result__verdict">
+                            <span class="sr-only">Câu {{number}}: </span>
+                            {{#statuslabel}}<strong>{{statuslabel}}</strong> · {{/statuslabel}}
+                            Bạn chọn: {{#chosenletter}}{{chosenletter}}{{/chosenletter}}{{^chosenletter}}—{{/chosenletter}}
+                            {{#rightletter}} · Đáp án: {{rightletter}}{{/rightletter}}
+                            {{#flagged}} · <span class="quizportal-result__flagged">Đã đánh dấu chưa chắc</span>{{/flagged}}
+                        </p>
+                        {{#explanation}}
+                            <div class="quizportal-result__explain">
+                                <p class="quizportal-result__explain-head">Giải thích</p>
+                                {{{explanation}}}
+                            </div>
+                        {{/explanation}}
+                    </div>
+                </div>
+            {{/questions}}
+        </div>
+    </div>
+
+    {{#script}}
+        <details class="quizportal-result__script" open>
+            <summary>Lời thoại</summary>
+            <div class="quizportal-result__script-body">{{{script}}}</div>
+        </details>
+    {{/script}}
+</section>

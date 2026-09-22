@@ -1,0 +1,70 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/exam_group
+
+    What the candidate sees at once: one question, or a stimulus with its
+    questions. Hidden until the exam script shows it. The question HTML comes
+    from core's question engine unchanged, inputs and all.
+
+    Context variables required for this template:
+    * index - position within the section
+    * part, heading, firstinpart, directions
+    * label - "Câu 41–43"
+    * hasstart, start - seconds into the recording (Listening only)
+    * sidebyside - stimulus beside the questions (Part 6/7) rather than above
+    * stimulus - rendered stimulus block, or null
+    * questions - [{slot, number, html, canflag, flagged}]
+
+    The flag button drives core's own flag checkbox inside the question HTML
+    (hidden with the rest of core's question info), so the flag travels with
+    every autosave and submission. It stays hidden until the script has found
+    that checkbox.
+
+    Example context (json):
+    {
+        "index": 0, "part": 5, "heading": "Part 5 — Hoàn thành câu", "firstinpart": true,
+        "directions": "…", "label": "Câu 101", "hasstart": false, "start": null, "sidebyside": false,
+        "stimulus": null, "questions": [{"slot": 124, "number": 101, "html": "<div class=\"que\"></div>",
+            "canflag": true, "flagged": false}]
+    }
+}}
+<section class="quizportal-exam__group{{#sidebyside}} quizportal-exam__group--split{{/sidebyside}}"
+         data-region="group" data-index="{{index}}" data-part="{{part}}" data-label="{{label}}"
+         {{#hasstart}}data-start="{{start}}"{{/hasstart}} hidden>
+    {{#firstinpart}}
+        <header class="quizportal-exam__part">
+            <h2>{{heading}}</h2>
+            <p>{{directions}}</p>
+        </header>
+    {{/firstinpart}}
+    <div class="quizportal-exam__group-body">
+        {{#stimulus}}
+            <div class="quizportal-exam__stimulus">{{{stimulus}}}</div>
+        {{/stimulus}}
+        <div class="quizportal-exam__questions">
+            {{#questions}}
+                <div class="quizportal-exam__q{{#flagged}} is-flagged{{/flagged}}" data-region="question"
+                     data-slot="{{slot}}" data-number="{{number}}">
+                    <div class="quizportal-exam__qside">
+                        <div class="quizportal-exam__qno" aria-hidden="true">{{number}}</div>
+                        {{#canflag}}
+                            <button type="button" class="quizportal-exam__flag" data-action="flag"
+                                    aria-pressed="{{#flagged}}true{{/flagged}}{{^flagged}}false{{/flagged}}"
+                                    aria-label="Đánh dấu câu {{number}}" title="Đánh dấu câu chưa chắc" hidden>
+                                {{> local_quizportal/flag_icon }}
+                            </button>
+                        {{/canflag}}
+                    </div>
+                    <div class="quizportal-exam__qbody">{{{html}}}</div>
+                </div>
+            {{/questions}}
+        </div>
+    </div>
+</section>

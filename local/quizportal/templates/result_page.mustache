@@ -1,0 +1,217 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/result_page
+
+    Results of one TOEIC attempt. Built by local_quizportal\output\result_page,
+    driven by local_quizportal/result. Without JavaScript every group is simply
+    listed one after another; the script turns that into one group at a time.
+
+    Borrows the exam page's classes (quizportal-exam__*) for the bar, groups,
+    bubbles and answer sheet, so the two pages read as one.
+
+    Context variables required for this template:
+    * papername, attemptid, isown, candidate, exiturl, exitlabel, retryurl, classicurl
+    * hasproblems, problems - string[] when the paper no longer matches its import
+    * unfinished - the attempt has not been submitted
+    * showscore, report - score report, see result_page::export_report()
+    * showcorrect, parts, counts - Part breakdown and status counts
+    * questioncount, flaggedcount - numbered questions, and how many the candidate flagged
+    * hasfilters - counts or flags to filter by
+    * audiourl - the recording, null when it may not be heard
+    * groups - see local_quizportal/result_group
+    * grid - [{heading, cells: [{number, group, status, statuslabel, flagged}]}]
+
+    Example context (json):
+    {
+        "papername": "Đề 01", "attemptid": 3, "isown": true, "candidate": null,
+        "exiturl": "#", "exitlabel": "Về danh sách đề", "retryurl": "#", "classicurl": null,
+        "hasproblems": false, "problems": [], "unfinished": false, "showscore": true,
+        "report": {"total": 785, "maxtotal": 990, "sections": [], "attemptno": 1, "finishedat": "22/09/2026 10:00",
+                   "timetaken": "1:47:05", "source": "Oxford", "partial": false},
+        "showcorrect": true, "parts": [], "counts": {"all": 200, "right": 158, "wrong": 37, "blank": 5},
+        "questioncount": 200, "flaggedcount": 6, "hasfilters": true,
+        "audiourl": null, "groups": [], "grid": []
+    }
+}}
+<div class="quizportal-exam quizportal-result" id="quizportal-result" data-attempt="{{attemptid}}">
+
+    <header class="quizportal-exam__bar">
+        <div class="quizportal-exam__bar-left">
+            <div class="quizportal-exam__brand-mark" aria-hidden="true">PT</div>
+            <div class="quizportal-exam__titles">
+                <span class="quizportal-exam__paper">{{papername}}</span>
+                <span class="quizportal-exam__section">Kết quả{{#candidate}} · {{candidate}}{{/candidate}}</span>
+            </div>
+        </div>
+        <div class="quizportal-exam__bar-right">
+            {{#classicurl}}
+                <a class="quizportal-exam__exit" href="{{classicurl}}">Giao diện Moodle</a>
+            {{/classicurl}}
+            {{#retryurl}}
+                <a class="quizportal-exam__btn quizportal-exam__btn--primary quizportal-exam__submit" href="{{retryurl}}">Làm lại đề</a>
+            {{/retryurl}}
+            <a class="quizportal-exam__exit" href="{{exiturl}}">{{exitlabel}}</a>
+        </div>
+    </header>
+
+    {{#hasproblems}}
+        <main class="quizportal-exam__message">
+            <p class="quizportal-exam__eyebrow">Chưa xem được kết quả</p>
+            <h1>Đề đã bị đổi cấu trúc sau khi nhập</h1>
+            <p>Trang kết quả cần đề giữ nguyên như lúc nhập để biết câu nào thuộc Part nào. Hiện có vấn đề sau:</p>
+            <ul class="quizportal-exam__problems">
+                {{#problems}}<li>{{.}}</li>{{/problems}}
+            </ul>
+            {{#classicurl}}<p><a href="{{classicurl}}">Xem bài làm bằng giao diện của Moodle</a></p>{{/classicurl}}
+        </main>
+    {{/hasproblems}}
+
+    {{^hasproblems}}
+    {{#unfinished}}
+        <main class="quizportal-exam__message">
+            <p class="quizportal-exam__eyebrow">Chưa nộp</p>
+            <h1>Lượt làm này chưa nộp bài</h1>
+            <p>Kết quả chỉ có sau khi nộp. Các câu đã trả lời tới giờ xem được ở giao diện của Moodle.</p>
+            {{#classicurl}}<p><a href="{{classicurl}}">Xem bài đang làm dở</a></p>{{/classicurl}}
+        </main>
+    {{/unfinished}}
+
+    {{^unfinished}}
+    <main class="quizportal-result__main">
+
+        <div class="quizportal-result__summary">
+            {{#report}}
+                <section class="quizportal-result__ticket" aria-labelledby="quizportal-result-score">
+                    <div class="quizportal-result__masthead">
+                        <p class="quizportal-result__eyebrow">Phiếu báo điểm</p>
+                        <p class="quizportal-result__when">
+                            {{#ispreview}}Xem thử · {{/ispreview}}Lượt {{attemptno}} · nộp {{finishedat}}{{#timetaken}} · làm trong {{timetaken}}{{/timetaken}}
+                        </p>
+                    </div>
+                    <div class="quizportal-result__score">
+                        <p class="quizportal-result__total" id="quizportal-result-score">
+                            <span class="quizportal-result__total-value">{{total}}</span>
+                            <span class="quizportal-result__total-max">/ {{maxtotal}}</span>
+                        </p>
+                        <p class="quizportal-result__estimate">Điểm TOEIC ước lượng</p>
+                        <dl class="quizportal-result__sections">
+                            {{#sections}}
+                                <div class="quizportal-result__section quizportal-result__section--{{skill}}">
+                                    <dt>{{label}}</dt>
+                                    <dd class="quizportal-result__section-score"><strong>{{score}}</strong> / {{max}}</dd>
+                                    <dd class="quizportal-result__section-raw">{{correct}}/{{questions}} câu đúng</dd>
+                                    <dd class="quizportal-result__meter" aria-hidden="true"><span style="width: {{percent}}%"></span></dd>
+                                </div>
+                            {{/sections}}
+                        </dl>
+                    </div>
+                </section>
+                <p class="quizportal-result__source">
+                    Quy đổi theo {{source}}. ETS quy đổi riêng cho từng đề thi thật, nên điểm thi thật có thể chênh vài chục điểm.
+                    {{#partial}}Đề này không đủ 100 câu mỗi phần: số câu đúng được quy về thang 100 trước khi đổi.{{/partial}}
+                </p>
+            {{/report}}
+
+            {{#showcorrect}}
+                <section class="quizportal-result__parts" aria-labelledby="quizportal-result-parts">
+                    <h2 id="quizportal-result-parts">Theo từng Part</h2>
+                    <table class="quizportal-result__parts-table">
+                        <thead>
+                            <tr><th scope="col">Part</th><th scope="col">Dạng bài</th><th scope="col" class="quizportal-result__num">Đúng</th><th scope="col"><span class="sr-only">Tỉ lệ</span></th></tr>
+                        </thead>
+                        <tbody>
+                            {{#parts}}
+                                <tr class="{{#islistening}}is-listening{{/islistening}}{{^islistening}}is-reading{{/islistening}}">
+                                    <td>{{part}}</td>
+                                    <td>{{name}}</td>
+                                    <td class="quizportal-result__num">{{correct}}/{{questions}}</td>
+                                    <td class="quizportal-result__bar-cell">
+                                        <span class="quizportal-result__bar" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
+                                        <span class="quizportal-result__pct">{{percent}}%</span>
+                                    </td>
+                                </tr>
+                            {{/parts}}
+                        </tbody>
+                    </table>
+                </section>
+            {{/showcorrect}}
+        </div>
+
+        <section class="quizportal-result__review" aria-labelledby="quizportal-result-review">
+            <div class="quizportal-result__review-head">
+                <h2 id="quizportal-result-review">Xem lại bài làm</h2>
+                {{#hasfilters}}
+                    <div class="quizportal-result__filters" role="group" aria-label="Lọc câu" data-region="filters" hidden>
+                        <button type="button" class="quizportal-result__filter" data-filter="all" aria-pressed="true">Tất cả <span>{{questioncount}}</span></button>
+                        {{#counts}}
+                            <button type="button" class="quizportal-result__filter" data-filter="wrong" aria-pressed="false">Sai <span>{{wrong}}</span></button>
+                            <button type="button" class="quizportal-result__filter" data-filter="blank" aria-pressed="false">Bỏ trống <span>{{blank}}</span></button>
+                            <button type="button" class="quizportal-result__filter" data-filter="right" aria-pressed="false">Đúng <span>{{right}}</span></button>
+                        {{/counts}}
+                        {{#flaggedcount}}
+                            <button type="button" class="quizportal-result__filter quizportal-result__filter--flagged" data-filter="flagged" aria-pressed="false">
+                                {{> local_quizportal/flag_icon }} Đã đánh dấu <span>{{flaggedcount}}</span>
+                            </button>
+                        {{/flaggedcount}}
+                    </div>
+                {{/hasfilters}}
+            </div>
+
+            {{#audiourl}}
+                <audio src="{{audiourl}}" preload="none" data-region="audio"></audio>
+            {{/audiourl}}
+
+            <div class="quizportal-exam__stage quizportal-exam__stage--reading quizportal-result__stage">
+                <div class="quizportal-exam__main">
+                    {{#groups}}
+                        {{> local_quizportal/result_group }}
+                    {{/groups}}
+
+                    <nav class="quizportal-exam__pager" aria-label="Chuyển nhóm câu" data-region="pager" hidden>
+                        <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost" data-action="prev">← Trước</button>
+                        <span class="quizportal-exam__pager-label" data-region="pager-label"></span>
+                        <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost" data-action="next">Tiếp →</button>
+                    </nav>
+                    <p class="quizportal-result__empty" data-region="empty" hidden>Không có câu nào trong mục này.</p>
+                </div>
+
+                <aside class="quizportal-exam__sheet" aria-label="Phiếu trả lời đã chấm">
+                    <div class="quizportal-exam__sheet-head">
+                        <h2>Phiếu trả lời</h2>
+                        {{#hasfilters}}
+                        <ul class="quizportal-result__legend">
+                            {{#showcorrect}}
+                                <li><span class="quizportal-exam__cell is-right" aria-hidden="true">1</span> Đúng</li>
+                                <li><span class="quizportal-exam__cell is-wrong" aria-hidden="true">2</span> Sai</li>
+                                <li><span class="quizportal-exam__cell is-blank" aria-hidden="true">3</span> Bỏ trống</li>
+                            {{/showcorrect}}
+                            {{#flaggedcount}}
+                                <li><span class="quizportal-exam__cell is-flagged" aria-hidden="true">4</span> Đã đánh dấu</li>
+                            {{/flaggedcount}}
+                        </ul>
+                        {{/hasfilters}}
+                    </div>
+                    {{#grid}}
+                        <h3>{{heading}}</h3>
+                        <div class="quizportal-exam__cells">
+                            {{#cells}}
+                                <a class="quizportal-exam__cell{{#status}} is-{{status}}{{/status}}{{#flagged}} is-flagged{{/flagged}}" href="#cau-{{number}}"
+                                   data-action="goto" data-group="{{group}}"
+                                   aria-label="Câu {{number}}{{#statuslabel}}: {{statuslabel}}{{/statuslabel}}{{#flagged}}, đã đánh dấu{{/flagged}}">{{number}}</a>
+                            {{/cells}}
+                        </div>
+                    {{/grid}}
+                </aside>
+            </div>
+        </section>
+    </main>
+    {{/unfinished}}
+    {{/hasproblems}}
+</div>

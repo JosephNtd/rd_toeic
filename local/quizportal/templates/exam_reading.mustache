@@ -1,0 +1,79 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/exam_reading
+
+    Part 5-7: one group on screen, free to move about, plus the answer sheet
+    that jumps to any question and shows which are done and which are flagged.
+    Flag counts and the "next flagged" button are filled in by the script.
+
+    Context variables required for this template:
+    * total - questions in the section
+    * groups - see local_quizportal/exam_group
+    * grid - [{heading, cells: [{number, slot, group}]}]
+
+    Example context (json):
+    {
+        "total": 1,
+        "groups": [],
+        "grid": [{"heading": "Part 5", "cells": [{"number": 101, "slot": 124, "group": 0}]}]
+    }
+}}
+<div class="quizportal-exam__stage quizportal-exam__stage--reading">
+    <div class="quizportal-exam__main">
+        {{#groups}}
+            {{> local_quizportal/exam_group }}
+        {{/groups}}
+
+        <nav class="quizportal-exam__pager" aria-label="Chuyển câu">
+            <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost" data-action="prev">← Trước</button>
+            <span class="quizportal-exam__pager-label" data-region="pager-label"></span>
+            <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost" data-action="next">Tiếp →</button>
+        </nav>
+    </div>
+
+    <aside class="quizportal-exam__sheet" aria-label="Phiếu trả lời">
+        <div class="quizportal-exam__sheet-head">
+            <h2>Phiếu trả lời</h2>
+            <p><span data-region="answered-count">0</span>/{{total}} câu đã làm</p>
+            <div class="quizportal-exam__sheet-flags" data-region="flag-tools" hidden>
+                <span class="quizportal-exam__sheet-flagcount">
+                    <span class="quizportal-exam__cell is-flagged quizportal-exam__cell--key" aria-hidden="true"></span>
+                    <span data-region="flagged-count">0</span> câu đánh dấu
+                </span>
+                <button type="button" class="quizportal-exam__linkbtn" data-action="next-flagged" disabled>Tới câu đánh dấu →</button>
+            </div>
+        </div>
+        {{#grid}}
+            <h3>{{heading}}</h3>
+            <div class="quizportal-exam__cells">
+                {{#cells}}
+                    <button type="button" class="quizportal-exam__cell" data-action="goto"
+                            data-group="{{group}}" data-slot="{{slot}}"
+                            aria-label="Câu {{number}}">{{number}}</button>
+                {{/cells}}
+            </div>
+        {{/grid}}
+    </aside>
+
+    <dialog class="quizportal-exam__dialog" data-region="confirm" aria-labelledby="quizportal-confirm-title">
+        <h2 id="quizportal-confirm-title">Nộp bài?</h2>
+        <p data-region="confirm-summary"></p>
+        <p class="quizportal-exam__dialog-list" data-region="confirm-list"></p>
+        <p class="quizportal-exam__dialog-flagged" data-region="confirm-flagged-box" hidden>
+            <span data-region="confirm-flagged"></span>
+            <button type="button" class="quizportal-exam__linkbtn" data-action="review-flagged">Xem lại các câu này</button>
+        </p>
+        <p>Sau khi nộp sẽ không sửa được câu trả lời nữa.</p>
+        <div class="quizportal-exam__dialog-actions">
+            <button type="button" class="quizportal-exam__btn quizportal-exam__btn--ghost" data-action="cancel-finish">Làm tiếp</button>
+            <button type="button" class="quizportal-exam__btn quizportal-exam__btn--primary" data-action="confirm-finish">Nộp bài</button>
+        </div>
+    </dialog>
+</div>

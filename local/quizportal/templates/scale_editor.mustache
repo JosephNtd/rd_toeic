@@ -1,0 +1,102 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/scale_editor
+
+    The two TOEIC conversion tables, editable (scale.php). Sits in the admin
+    layout, so it leans on Bootstrap and adds little of its own.
+
+    Context variables required for this template:
+    * actionurl, sesskey
+    * source, defaultsource, customised
+    * haserrors, errorcount, errors - string[]
+    * rows - [{correct, listening, reading, oxford, band, changed}], 100 correct first
+    * min, max
+
+    Example context (json):
+    {
+        "actionurl": "#", "sesskey": "abc", "source": "Oxford", "defaultsource": "Oxford",
+        "customised": false, "haserrors": false, "errorcount": 0, "errors": [],
+        "rows": [{"correct": 100, "listening": 495, "reading": 495, "oxford": 495, "band": "470–495", "changed": false}],
+        "min": 5, "max": 495
+    }
+}}
+<div class="quizportal-scale">
+    <h2>Bảng quy đổi điểm TOEIC</h2>
+    <p>
+        Số câu đúng của mỗi phần (0–100) được đổi sang điểm 5–495 theo bảng dưới; tổng hai phần là điểm 10–990
+        hiện trên trang kết quả và dashboard. ETS không công bố bảng quy đổi — mỗi đề thi thật có bảng riêng —
+        nên mọi bảng đều là ước lượng.
+    </p>
+    <p>
+        Mặc định lấy từ <a href="https://www.oxfordenglishtesting.com/oaslms/resources/toeic_score_conversion_chart.pdf">bảng
+        quy đổi của Oxford English Testing</a>. Bảng Oxford in theo khoảng (ví dụ 96–100 câu → 470–495); cột
+        “Oxford” dưới đây là một con số trong khoảng đó, lấy theo điểm giữa. Đổi bảng thì <strong>mọi lượt làm cũ
+        cũng được tính lại</strong> theo bảng mới: điểm không lưu sẵn mà tính mỗi lần xem.
+    </p>
+    {{#customised}}
+        <div class="alert alert-info">Đang dùng bảng đã sửa. Các dòng khác bảng Oxford được tô nền.</div>
+    {{/customised}}
+
+    {{#haserrors}}
+        <div class="alert alert-danger" role="alert">
+            <p class="mb-1"><strong>Chưa lưu — bảng có {{errorcount}} lỗi:</strong></p>
+            <ul class="mb-0">
+                {{#errors}}<li>{{.}}</li>{{/errors}}
+            </ul>
+        </div>
+    {{/haserrors}}
+
+    <form method="post" action="{{actionurl}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+
+        <div class="mb-3">
+            <label for="quizportal-scale-source" class="form-label"><strong>Nguồn bảng</strong> — hiện dưới mọi điểm số</label>
+            <input type="text" class="form-control" id="quizportal-scale-source" name="source" value="{{source}}"
+                   maxlength="255" placeholder="{{defaultsource}}">
+        </div>
+
+        <div class="quizportal-scale__actions mb-3">
+            <button type="submit" name="action" value="save" class="btn btn-primary">Lưu bảng</button>
+            <button type="submit" name="action" value="reset" class="btn btn-secondary"
+                    onclick="return confirm('Bỏ mọi chỉnh sửa và dùng lại bảng Oxford cho cả hai phần?');">Khôi phục bảng Oxford</button>
+        </div>
+
+        <table class="table table-sm quizportal-scale__table">
+            <thead>
+                <tr>
+                    <th scope="col">Số câu đúng</th>
+                    <th scope="col">Nghe ({{min}}–{{max}})</th>
+                    <th scope="col">Đọc ({{min}}–{{max}})</th>
+                    <th scope="col">Oxford</th>
+                    <th scope="col">Khoảng Oxford in</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                    <tr class="{{#changed}}quizportal-scale__changed{{/changed}}">
+                        <th scope="row">{{correct}}</th>
+                        <td><input type="number" class="form-control form-control-sm" name="listening[{{correct}}]"
+                                   value="{{listening}}" min="{{min}}" max="{{max}}" step="5"
+                                   aria-label="Nghe, {{correct}} câu đúng"></td>
+                        <td><input type="number" class="form-control form-control-sm" name="reading[{{correct}}]"
+                                   value="{{reading}}" min="{{min}}" max="{{max}}" step="5"
+                                   aria-label="Đọc, {{correct}} câu đúng"></td>
+                        <td>{{oxford}}</td>
+                        <td class="text-muted">{{band}}</td>
+                    </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+
+        <div class="quizportal-scale__actions">
+            <button type="submit" name="action" value="save" class="btn btn-primary">Lưu bảng</button>
+        </div>
+    </form>
+</div>

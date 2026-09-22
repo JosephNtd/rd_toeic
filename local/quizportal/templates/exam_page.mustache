@@ -1,0 +1,128 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/exam_page
+
+    One section of a TOEIC attempt. Built by local_quizportal\output\exam_page;
+    driven by the AMD module local_quizportal/exam, which reads its settings
+    from the data attributes on the root element.
+
+    Context variables required for this template:
+    * attemptid, sesskey, processurl, ajaxurl, exiturl
+    * papername, sectionlabel, section
+    * ispreview, hastimer, timeleft, timeleftlabel
+    * writableslots - comma separated slots this section may submit
+    * problems - {items, isstaff, editurl} when the paper cannot run, else null
+    * listening, bridge, reading - the data of whichever section this is
+    * overdue - bool
+
+    Example context (json):
+    {
+        "attemptid": 12, "sesskey": "abc", "processurl": "#", "ajaxurl": "#", "exiturl": "#",
+        "papername": "Đề 01", "sectionlabel": "Phần đọc · Part 5–7", "section": "reading",
+        "ispreview": false, "hastimer": true, "timeleft": 4500, "timeleftlabel": "1:15:00",
+        "writableslots": "124", "problems": null, "listening": null, "bridge": null,
+        "reading": {"total": 1, "groups": [], "grid": []}, "overdue": false
+    }
+}}
+<div class="quizportal-exam" id="quizportal-exam"
+     data-section="{{section}}"
+     data-attempt="{{attemptid}}"
+     data-ajaxurl="{{ajaxurl}}"
+     data-timeleft="{{timeleft}}"
+     data-hastimer="{{#hastimer}}1{{/hastimer}}{{^hastimer}}0{{/hastimer}}"
+     data-preview="{{#ispreview}}1{{/ispreview}}{{^ispreview}}0{{/ispreview}}"
+     {{#listening}}
+     data-started="{{#started}}1{{/started}}{{^started}}0{{/started}}"
+     data-position="{{position}}"
+     data-duration="{{duration}}"
+     {{/listening}}>
+
+    <header class="quizportal-exam__bar">
+        <div class="quizportal-exam__bar-left">
+            <div class="quizportal-exam__brand-mark" aria-hidden="true">PT</div>
+            <div class="quizportal-exam__titles">
+                <span class="quizportal-exam__paper">{{papername}}</span>
+                <span class="quizportal-exam__section">{{sectionlabel}}</span>
+            </div>
+            {{#ispreview}}
+                <span class="quizportal-exam__preview-tag">Xem thử</span>
+            {{/ispreview}}
+        </div>
+        <div class="quizportal-exam__bar-right">
+            <span class="quizportal-exam__save" data-region="save-status" aria-live="polite"></span>
+            {{#hastimer}}
+                <div class="quizportal-exam__timer" data-region="timer" role="timer">
+                    <span class="quizportal-exam__timer-label">Còn lại</span>
+                    <span class="quizportal-exam__timer-value" data-region="timer-value">{{timeleftlabel}}</span>
+                </div>
+            {{/hastimer}}
+            {{#reading}}
+                {{! Always in reach, as on the computer-based test; the answer sheet can be longer than the screen. }}
+                <button type="button" class="quizportal-exam__btn quizportal-exam__btn--primary quizportal-exam__submit"
+                        data-action="finish">Nộp bài</button>
+            {{/reading}}
+            <a class="quizportal-exam__exit" href="{{exiturl}}" data-action="exit">Thoát</a>
+        </div>
+    </header>
+
+    <noscript>
+        <div class="quizportal-exam__notice">Trang làm bài cần JavaScript để phát âm thanh và lưu câu trả lời. Hãy bật JavaScript rồi tải lại trang.</div>
+    </noscript>
+
+    {{#problems}}
+        <main class="quizportal-exam__message">
+            <p class="quizportal-exam__eyebrow">Chưa làm được bài này</p>
+            <h1>Đề đang có lỗi cấu trúc</h1>
+            <p>Trang làm bài cần đề giữ nguyên cấu trúc như lúc nhập để phát âm thanh đúng câu. Hiện có vấn đề sau:</p>
+            <ul class="quizportal-exam__problems">
+                {{#items}}<li>{{.}}</li>{{/items}}
+            </ul>
+            {{#isstaff}}
+                <p>Cách sửa chắc chắn nhất là xoá đề này và nhập lại từ file Excel. <a href="{{editurl}}">Mở trang sửa đề</a></p>
+            {{/isstaff}}
+            {{^isstaff}}
+                <p>Hãy báo giáo viên. Bài làm của bạn chưa bị tính giờ sai hay mất câu trả lời nào.</p>
+            {{/isstaff}}
+        </main>
+    {{/problems}}
+
+    {{^problems}}
+    <form id="responseform" class="quizportal-exam__form" method="post" action="{{processurl}}"
+          enctype="multipart/form-data" accept-charset="utf-8" autocomplete="off">
+        <input type="hidden" name="attempt" value="{{attemptid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+
+        {{#listening}}
+            <input type="hidden" name="action" value="" data-region="action">
+            <input type="hidden" name="slots" value="{{writableslots}}">
+            {{> local_quizportal/exam_listening }}
+        {{/listening}}
+
+        {{#bridge}}
+            {{> local_quizportal/exam_bridge }}
+        {{/bridge}}
+
+        {{#reading}}
+            <input type="hidden" name="action" value="" data-region="action">
+            <input type="hidden" name="slots" value="{{writableslots}}">
+            {{> local_quizportal/exam_reading }}
+        {{/reading}}
+
+        {{#overdue}}
+            <main class="quizportal-exam__message">
+                <p class="quizportal-exam__eyebrow">Hết giờ</p>
+                <h1>Thời gian làm bài đã hết</h1>
+                <p>Câu trả lời đã lưu vẫn được giữ. Hãy nộp bài ngay; hết thời gian cho phép nộp muộn thì bài sẽ không được chấm.</p>
+                <button type="submit" name="action" value="finish" class="quizportal-exam__btn quizportal-exam__btn--primary">Nộp bài</button>
+            </main>
+        {{/overdue}}
+    </form>
+    {{/problems}}
+</div>

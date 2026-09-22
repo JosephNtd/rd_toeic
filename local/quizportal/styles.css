@@ -1,0 +1,1780 @@
+/* Palette comes from theme_ptedu (scss/post.scss exposes it on :root as --pt-*).
+   Aliased here so this sheet keeps short local names, with one source of truth.
+   Fallbacks let the portal stay legible if the theme is ever switched away. */
+:root {
+    --paper:        var(--pt-paper, #f7f5f0);
+    --sheet:        var(--pt-sheet, #fffdf9);
+    --ink:          var(--pt-ink, #14303a);
+    --ink-soft:     var(--pt-ink-soft, #46626e);
+    --ink-faint:    var(--pt-ink-faint, #5f727c);
+    --ink-disabled: var(--pt-ink-disabled, #8496a0);
+    --line:         var(--pt-line, #ded8cd);
+    --accent:       var(--pt-accent, #a75d1b);
+    --accent-dark:  var(--pt-accent-dark, #884c16);
+    --accent-tint:  #f4ebe1;
+
+    /* Reserved for marking answers right or wrong, and for nothing else - a
+       button in either colour would leave the results page nothing to mark with. */
+    --correct:      var(--pt-correct, #2e7d52);
+    --wrong:        var(--pt-wrong, #b3261e);
+
+    /* On the dark ink panel of the login page. */
+    --on-ink:       #f1eee8;
+    --on-ink-soft:  #b9c4c8;
+    --on-ink-faint: #93a4aa;
+}
+
+.quizportal-login {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    background: var(--sheet);
+    box-shadow: 0 24px 60px -24px rgba(20, 48, 58, 0.35);
+}
+
+/* Row 1 - identity only. The old left column also carried a pull quote, an exam
+   details list and a sample answer key; at a 40/60 split those squeezed the form
+   into roughly 200px. Stacking trades that decoration for a form that fits. */
+.quizportal-login__masthead {
+    position: relative;
+    background: var(--ink);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.2px);
+    background-size: 20px 20px;
+    color: var(--on-ink);
+    padding: 26px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* The ticket perforation survives the relayout as two notches punched into the
+   seam between the rows - the metaphor was the point of the design. */
+.quizportal-login__masthead::before,
+.quizportal-login__masthead::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+}
+
+.quizportal-login__masthead::before { left: -9px; }
+.quizportal-login__masthead::after { right: -9px; }
+
+.quizportal-login__brand-mark {
+    width: 42px;
+    height: 42px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-weight: 700;
+    font-size: 17px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.quizportal-login__brand-name {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+}
+
+.quizportal-login__brand-sub {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--on-ink-faint);
+}
+
+.quizportal-login__panel {
+    flex: 1;
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--ink);
+}
+
+.quizportal-login__title {
+    font-size: clamp(26px, 3vw, 30px);
+    margin: 0 0 6px;
+    font-weight: 700;
+}
+
+.quizportal-login__lede {
+    margin: 0 0 30px;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+
+.quizportal-login__form {
+    width: 100%;
+}
+
+.quizportal-login__field {
+    margin-bottom: 18px;
+}
+
+.quizportal-login__field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+}
+
+.quizportal-login__field input {
+    width: 100%;
+    padding: 11px 13px;
+    font-family: inherit;
+    font-size: 14.5px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.3px solid var(--line);
+    outline: none;
+}
+
+.quizportal-login__field input::placeholder {
+    color: var(--ink-faint);
+}
+
+.quizportal-login__field input:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(167, 93, 27, 0.20);
+}
+
+.quizportal-login__password-wrap {
+    position: relative;
+}
+
+.quizportal-login__password-wrap input {
+    padding-right: 56px;
+}
+
+.quizportal-login__pw-toggle {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    bottom: 4px;
+    padding: 0 10px;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.quizportal-login__pw-toggle:hover {
+    color: var(--accent);
+}
+
+.quizportal-login__pw-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(167, 93, 27, 0.20);
+}
+
+.quizportal-login__row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13.5px;
+    margin-bottom: 26px;
+}
+
+.quizportal-login__remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--ink-soft);
+}
+
+.quizportal-login__remember input {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--accent);
+}
+
+.quizportal-login__forgot {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.quizportal-login__forgot:hover {
+    text-decoration: underline;
+}
+
+.quizportal-login__submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+}
+
+.quizportal-login__submit:hover {
+    background: var(--accent-dark);
+}
+
+.quizportal-login__submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(167, 93, 27, 0.30);
+}
+
+.quizportal-login__signup-note {
+    margin: 22px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+}
+
+.quizportal-login__signup-note strong {
+    color: var(--ink);
+}
+
+.quizportal-login__footnote {
+    margin: 28px 0 0;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .quizportal-login__title,
+    .quizportal-login__lede,
+    .quizportal-login__field,
+    .quizportal-login__row-between,
+    .quizportal-login__submit,
+    .quizportal-login__signup-note {
+        opacity: 0;
+        animation: quizportal-rise 0.5s ease forwards;
+    }
+
+    .quizportal-login__title {
+        animation-delay: 0.02s;
+    }
+
+    .quizportal-login__lede {
+        animation-delay: 0.08s;
+    }
+
+    .quizportal-login__field:nth-of-type(1) {
+        animation-delay: 0.14s;
+    }
+
+    .quizportal-login__field:nth-of-type(2) {
+        animation-delay: 0.19s;
+    }
+
+    .quizportal-login__row-between {
+        animation-delay: 0.24s;
+    }
+
+    .quizportal-login__submit {
+        animation-delay: 0.29s;
+    }
+
+    .quizportal-login__signup-note {
+        animation-delay: 0.34s;
+    }
+}
+
+@keyframes quizportal-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 780px) {
+    .quizportal-login {
+        max-width: 440px;
+    }
+
+    .quizportal-login__masthead {
+        padding: 22px 28px;
+    }
+
+    .quizportal-login__panel {
+        padding: 36px 28px;
+    }
+
+    .quizportal-login__row-between {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ==========================================================================
+   Dashboard (danh sach bai thi) - reuses the tokens defined in :root above.
+   ========================================================================== */
+
+body.pagelayout-embedded {
+    background: var(--paper);
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+}
+
+.quizportal-dashboard a { color: inherit; }
+
+.quizportal-dashboard__topbar {
+    background: var(--ink);
+    color: var(--on-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 32px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.quizportal-dashboard__topbar-left,
+.quizportal-dashboard__topbar-right { display: flex; align-items: center; gap: 14px; }
+
+.quizportal-dashboard__brand { display: flex; align-items: center; gap: 10px; }
+
+.quizportal-dashboard__brand-mark {
+    width: 30px;
+    height: 30px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.quizportal-dashboard__brand-name { font-size: 16px; font-weight: 700; }
+
+.quizportal-dashboard__class-tag {
+    font-size: 12.5px;
+    color: var(--on-ink-soft);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    padding-left: 16px;
+}
+
+.quizportal-dashboard__avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.quizportal-dashboard__user-name { font-size: 13.5px; }
+
+.quizportal-dashboard__logout {
+    font-size: 13px;
+    color: var(--on-ink-soft);
+    text-decoration: none;
+    padding: 6px 4px;
+}
+
+.quizportal-dashboard__logout:hover { color: #fff; }
+
+.quizportal-dashboard__main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 32px 64px;
+}
+
+.quizportal-dashboard__main h1 {
+    font-weight: 700;
+    font-size: clamp(26px, 3vw, 30px);
+    margin: 0 0 8px;
+}
+
+.quizportal-dashboard__lede {
+    margin: 0 0 28px;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    line-height: 1.6;
+    max-width: 62ch;
+}
+
+.quizportal-dashboard__stats {
+    display: flex;
+    gap: 36px;
+    padding: 16px 20px;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    margin: 0 0 28px;
+    flex-wrap: wrap;
+}
+
+.quizportal-dashboard__stat dt {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+}
+
+.quizportal-dashboard__stat dd {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.quizportal-dashboard__tabs {
+    display: flex;
+    gap: 22px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 10px;
+}
+
+.quizportal-dashboard__tab {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    padding: 10px 2px 12px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.quizportal-dashboard__tab[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.quizportal-dashboard__tab:hover { color: var(--ink); }
+
+.quizportal-dashboard__roster { list-style: none; margin: 8px 0 0; padding: 0; }
+
+.quizportal-dashboard__row {
+    display: grid;
+    grid-template-columns: 48px 1fr 150px 132px;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 4px;
+    border-top: 1px solid var(--line);
+}
+
+.quizportal-dashboard__roster li:last-child .quizportal-dashboard__row { border-bottom: 1px solid var(--line); }
+
+.quizportal-dashboard__idx {
+    width: 40px;
+    height: 40px;
+    border: 1.3px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.quizportal-dashboard__row[data-status="closed"] .quizportal-dashboard__idx,
+.quizportal-dashboard__row[data-status="upcoming"] .quizportal-dashboard__idx {
+    border-color: var(--line);
+    color: var(--ink-faint);
+}
+
+.quizportal-dashboard__title { font-weight: 600; font-size: 15px; margin: 0 0 6px; }
+
+.quizportal-dashboard__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+}
+
+.quizportal-dashboard__partbar {
+    display: flex;
+    width: 100%;
+    max-width: 320px;
+    height: 6px;
+    overflow: hidden;
+}
+
+.quizportal-dashboard__partbar-seg.is-listening { background: var(--ink); }
+.quizportal-dashboard__partbar-seg.is-reading { background: var(--accent); }
+
+.quizportal-dashboard__status { font-size: 13px; }
+
+.quizportal-dashboard__status-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+    margin-bottom: 3px;
+}
+
+.quizportal-dashboard__status.is-open .quizportal-dashboard__status-value { color: var(--accent); font-weight: 700; }
+.quizportal-dashboard__status.is-completed .quizportal-dashboard__status-value { color: var(--ink); font-weight: 700; }
+.quizportal-dashboard__status.is-completed .quizportal-dashboard__status-sub { color: var(--ink-soft); font-size: 12px; }
+.quizportal-dashboard__status.is-upcoming .quizportal-dashboard__status-value,
+.quizportal-dashboard__status.is-closed .quizportal-dashboard__status-value { color: var(--ink-faint); font-weight: 600; }
+
+.quizportal-dashboard__actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+.quizportal-dashboard__btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.quizportal-dashboard__btn--primary { background: var(--accent); color: #fff; }
+.quizportal-dashboard__btn--primary:hover { background: var(--accent-dark); }
+
+.quizportal-dashboard__btn--ghost {
+    background: none;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+}
+.quizportal-dashboard__btn--ghost:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+.quizportal-dashboard__btn[disabled] {
+    background: none;
+    color: var(--ink-faint);
+    border: 1px solid var(--line);
+    cursor: not-allowed;
+}
+
+.quizportal-dashboard__empty {
+    margin-top: 8px;
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+    border: 1.5px dashed var(--line);
+}
+
+.quizportal-dashboard__footnote { margin-top: 40px; font-size: 11.5px; color: var(--ink-faint); }
+
+@media (max-width: 700px) {
+    .quizportal-dashboard__topbar { padding: 14px 20px; }
+    .quizportal-dashboard__class-tag { display: none; }
+    .quizportal-dashboard__main { padding: 32px 18px 48px; }
+    .quizportal-dashboard__row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .quizportal-dashboard__idx { display: none; }
+    .quizportal-dashboard__actions { align-items: flex-start; flex-direction: row; }
+    .quizportal-dashboard__status { order: 3; }
+}
+
+/* ---------------------------------------------------------------------------
+   Import page (import.php). Sits inside the admin layout, so it leans on the
+   theme's Bootstrap styling and only adds what that lacks.
+   --------------------------------------------------------------------------- */
+
+.quizportal-import {
+    max-width: 760px;
+    margin-bottom: 32px;
+}
+
+.quizportal-import__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.quizportal-import__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px 24px;
+    margin: 0 0 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.quizportal-import__facts dt { margin-bottom: 4px; }
+.quizportal-import__facts dd { margin: 0; font-size: 1.125rem; color: var(--ink); }
+
+.quizportal-import__parts { max-width: 480px; }
+
+/* Same key as the dashboard part bar: ink for Listening, accent for Reading. */
+.quizportal-import__parts tr.is-listening td:first-child { border-left: 3px solid var(--ink); }
+.quizportal-import__parts tr.is-reading td:first-child { border-left: 3px solid var(--accent); }
+
+.quizportal-import__care {
+    margin: 24px 0;
+    padding: 16px 20px;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+}
+
+.quizportal-import__care ol { margin-bottom: 0; padding-left: 1.25rem; }
+.quizportal-import__care li + li { margin-top: 6px; }
+
+.quizportal-import__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ===========================================================================
+   Exam page (attempt.php) - one section of a TOEIC attempt.
+
+   Colour rules: ink and accent only. --pt-correct / --pt-wrong stay out of this
+   page entirely - nothing here is marked right or wrong - and warnings (low
+   time, a failed save) use the accent, never red.
+   =========================================================================== */
+
+#page-local-quizportal-attempt #page { margin: 0; padding: 0; }
+
+.quizportal-exam {
+    --exam-bar: 60px;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+/* No rule for [hidden] here: Bootstrap's reboot already makes it
+   display: none !important, and nothing below may set display on an element
+   the script hides (groups, gate panels) without breaking that. */
+
+.quizportal-exam h1,
+.quizportal-exam h2 {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    color: var(--ink);
+}
+
+.quizportal-exam :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- Top bar ------------------------------------------------------------- */
+
+.quizportal-exam__bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: var(--exam-bar);
+    background: var(--ink);
+    color: var(--on-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 24px;
+}
+
+.quizportal-exam__bar-left,
+.quizportal-exam__bar-right { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+.quizportal-exam__brand-mark {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.quizportal-exam__titles { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+
+.quizportal-exam__paper {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quizportal-exam__section { font-size: 12.5px; color: var(--on-ink-soft); }
+
+.quizportal-exam__preview-tag {
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--on-ink-faint);
+    color: var(--on-ink-soft);
+    padding: 2px 8px;
+}
+
+.quizportal-exam__save { font-size: 12.5px; color: var(--on-ink-faint); }
+
+/* Accent on the ink bar is too dark to read, so a warning is a light pill. */
+.quizportal-exam__save.is-warning {
+    color: var(--ink);
+    background: var(--accent-tint);
+    padding: 2px 8px;
+}
+
+.quizportal-exam__timer {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.quizportal-exam__timer-label { font-size: 12px; color: var(--on-ink-soft); }
+
+.quizportal-exam__timer-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    min-width: 4.5em;
+    text-align: right;
+}
+
+/* White on accent: 4.97:1. */
+.quizportal-exam__timer.is-low { background: var(--accent); border-color: var(--accent); }
+.quizportal-exam__timer.is-low .quizportal-exam__timer-label { color: #fff; }
+
+.quizportal-exam__exit {
+    color: var(--on-ink-soft);
+    font-size: 13px;
+    text-decoration: none;
+    padding: 6px 4px;
+}
+
+.quizportal-exam__exit:hover { color: #fff; }
+
+/* --- Shared pieces ------------------------------------------------------- */
+
+.quizportal-exam__btn {
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1.3;
+}
+
+.quizportal-exam__btn--primary { background: var(--accent); color: #fff; }
+.quizportal-exam__btn--primary:hover { background: var(--accent-dark); }
+
+/* The same buttons as links ("Làm lại đề"): no underline, and keep the white. */
+a.quizportal-exam__btn { display: inline-block; text-decoration: none; }
+a.quizportal-exam__btn--primary:hover,
+a.quizportal-exam__btn--primary:focus { color: #fff; text-decoration: none; }
+.quizportal-exam__btn--ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.quizportal-exam__btn--ghost:hover { border-color: var(--ink-soft); }
+.quizportal-exam__btn[disabled] { opacity: 0.5; cursor: default; }
+
+.quizportal-exam__linkbtn {
+    font: inherit;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.quizportal-exam__eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+}
+
+.quizportal-exam__notice {
+    max-width: 720px;
+    margin: 24px auto;
+    padding: 14px 18px;
+    background: var(--accent-tint);
+}
+
+.quizportal-exam__message {
+    max-width: 680px;
+    margin: 48px auto;
+    padding: 36px 40px;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+}
+
+.quizportal-exam__message h1 { font-size: 28px; margin: 0 0 14px; }
+.quizportal-exam__message p { color: var(--ink-soft); }
+.quizportal-exam__problems { color: var(--ink); padding-left: 1.2rem; }
+.quizportal-exam__problems li + li { margin-top: 6px; }
+
+.quizportal-exam__next {
+    margin: 24px 0 28px;
+    padding: 18px 22px;
+    border-left: 3px solid var(--accent);
+    background: var(--paper);
+}
+
+.quizportal-exam__next h2 { font-size: 19px; margin: 0 0 8px; }
+.quizportal-exam__next ul { margin: 0 0 10px; padding-left: 1.2rem; }
+
+.quizportal-exam__stage {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+}
+
+/* --- Listening: player and start panel ----------------------------------- */
+
+.quizportal-exam__player {
+    position: sticky;
+    top: var(--exam-bar);
+    z-index: 10;
+    background: var(--paper);
+    padding: 12px 0 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.quizportal-exam__player audio { width: 100%; margin-bottom: 8px; }
+.quizportal-exam__player audio:not([controls]) { display: none; }
+
+.quizportal-exam__player-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-size: 13.5px;
+    margin-bottom: 8px;
+}
+
+.quizportal-exam__player-state { font-weight: 600; }
+.quizportal-exam__player-where { color: var(--ink-soft); flex: 1; }
+.quizportal-exam__player-time { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+
+.quizportal-exam__progress { height: 4px; background: var(--line); }
+.quizportal-exam__progress-fill { height: 100%; width: 0; background: var(--ink); }
+
+.quizportal-exam__volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+}
+
+.quizportal-exam__volume input { width: 140px; accent-color: var(--ink); }
+
+.quizportal-exam__gate {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    padding: 26px 30px;
+    margin-bottom: 20px;
+}
+
+.quizportal-exam__gate h1 { font-size: 24px; margin: 0 0 12px; }
+.quizportal-exam__gate ul { padding-left: 1.2rem; margin: 0 0 12px; }
+.quizportal-exam__gate li + li { margin-top: 4px; }
+.quizportal-exam__gate p { color: var(--ink-soft); }
+
+.quizportal-exam__gate-error {
+    color: var(--ink);
+    background: var(--accent-tint);
+    padding: 8px 12px;
+}
+
+.quizportal-exam__staff { font-size: 13px; color: var(--ink-faint); margin: 0 0 16px; }
+.quizportal-exam__hint { color: var(--ink-faint); font-size: 13.5px; margin: 0 0 14px; }
+
+/* --- A group of questions ------------------------------------------------ */
+
+.quizportal-exam__group {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    padding: 26px 30px 12px;
+}
+
+.quizportal-exam__part {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+}
+
+.quizportal-exam__part h2 { font-size: 21px; margin: 0 0 6px; }
+.quizportal-exam__part p { margin: 0; color: var(--ink-soft); font-size: 14px; max-width: 70ch; }
+
+.quizportal-exam__stimulus { margin-bottom: 20px; }
+
+.quizportal-exam__q {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.quizportal-exam__qno {
+    width: 38px;
+    height: 32px;
+    background: var(--ink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Number and flag, one above the other beside the question. */
+.quizportal-exam__qside {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* --- Flag: "not sure, come back to this" ---------------------------------
+   Outline when off, filled in on accent when on - the shape changes, not only
+   the colour. White on accent 4.97:1; accent against the sheet 4.9:1. */
+
+.quizportal-exam__flag {
+    width: 38px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.quizportal-exam__flag:hover { border-color: var(--accent); color: var(--accent); }
+
+.quizportal-exam__flag[aria-pressed="true"],
+.quizportal-exam__flag.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.quizportal-exam__flag[aria-pressed="true"]:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+.quizportal-exam__flag.is-on { cursor: default; }
+
+.quizportal-exam__flag-icon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.quizportal-exam__flag[aria-pressed="true"] .quizportal-exam__flag-cloth,
+.quizportal-exam__flag.is-on .quizportal-exam__flag-cloth,
+.quizportal-exam__flag-inline.is-on .quizportal-exam__flag-cloth { fill: currentColor; }
+
+/* The icon inside running text: the instructions, the bridge page. */
+.quizportal-exam__flag-inline { display: inline-flex; vertical-align: -3px; }
+.quizportal-exam__flag-inline.is-on { color: var(--accent); }
+
+/* A flagged question on the exam page is marked as with a highlighter. The
+   shadow spreads the tint past the edges without moving anything. Not on the
+   results page: --correct on this tint is 4.27:1, under AA.
+   "Bỏ chọn" is --ink-faint elsewhere, 4.26:1 here, so it goes a shade darker. */
+.quizportal-exam__q.is-flagged:not(.quizportal-result__q) > .quizportal-exam__qbody {
+    background: var(--accent-tint);
+    box-shadow: 0 0 0 8px var(--accent-tint);
+}
+
+.quizportal-exam__q.is-flagged .qtype_multichoice_clearchoice a { color: var(--ink-soft); }
+
+/* Part 6/7: the text beside its questions, each scrolling on its own. */
+@media (min-width: 900px) {
+    .quizportal-exam__group--split .quizportal-exam__group-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 28px;
+        align-items: start;
+    }
+
+    .quizportal-exam__group--split .quizportal-exam__stimulus {
+        position: sticky;
+        top: calc(var(--exam-bar) + 16px);
+        max-height: calc(100vh - var(--exam-bar) - 32px);
+        overflow-y: auto;
+        margin-bottom: 0;
+        padding-right: 12px;
+    }
+}
+
+.quizportal-exam__group--split .quizportal-exam__stimulus .qtext {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 15.5px;
+    line-height: 1.7;
+}
+
+.quizportal-exam__group--split .quizportal-exam__stimulus hr {
+    border: 0;
+    border-top: 1px dashed var(--line);
+    margin: 20px 0;
+}
+
+/* --- Core question markup, stripped to the paper ------------------------- */
+
+/* Number, state, flag, edit link: the page shows its own number instead. */
+.quizportal-exam .que .info { display: none; }
+
+.quizportal-exam .que {
+    display: block;
+    margin: 0;
+    background: none;
+    border: 0;
+}
+
+.quizportal-exam .que .content { margin: 0; }
+
+.quizportal-exam .que .formulation {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    color: var(--ink);
+}
+
+.quizportal-exam .que .qtext { margin-bottom: 12px; }
+.quizportal-exam .que .qtext p { margin: 0 0 8px; }
+.quizportal-exam .que .qtext img { max-width: 100%; height: auto; border: 1px solid var(--line); }
+
+.quizportal-exam .que .ablock { margin: 0; }
+.quizportal-exam .que .ablock fieldset { margin: 0; }
+
+.quizportal-exam .que.multichoice .answer div.r0,
+.quizportal-exam .que.multichoice .answer div.r1 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 0 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+    cursor: pointer;
+}
+
+.quizportal-exam .que.multichoice .answer div.r0:hover,
+.quizportal-exam .que.multichoice .answer div.r1:hover { border-color: var(--ink-soft); }
+
+/* The radio stays in the page for keyboards and screen readers; the bubble
+   is what the eye sees. */
+.quizportal-exam .que.multichoice .answer div.r0 input,
+.quizportal-exam .que.multichoice .answer div.r1 input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+}
+
+.quizportal-exam .que.multichoice .answer [data-region="answer-label"] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.quizportal-exam .que.multichoice .answer [data-region="answer-label"] .flex-fill { margin-left: 0; }
+
+.quizportal-exam__bubble {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--sheet);
+}
+
+/* Chosen: the row takes the ink, the bubble is filled in, as with a pencil. */
+.quizportal-exam .que.multichoice .answer div:has(> input:checked) {
+    border-color: var(--ink);
+    background: #eef1f1;
+}
+
+.quizportal-exam .que.multichoice .answer div:has(> input:checked) .quizportal-exam__bubble {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+.quizportal-exam .que.multichoice .answer div:has(> input:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Part 1 and 2: nothing printed but the letters - a row of bubbles. */
+.quizportal-exam .que.multichoice .answer.quizportal-exam__answers--letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* No box around a bare bubble: the filled bubble says enough on its own. */
+.quizportal-exam .que.multichoice .answer.quizportal-exam__answers--letters div.r0,
+.quizportal-exam .que.multichoice .answer.quizportal-exam__answers--letters div.r1,
+.quizportal-exam .que.multichoice .answer.quizportal-exam__answers--letters div:has(> input:checked) {
+    padding: 2px;
+    margin: 0;
+    border-color: transparent;
+    border-radius: 50%;
+    background: none;
+}
+
+.quizportal-exam .que.multichoice .answer.quizportal-exam__answers--letters div:hover .quizportal-exam__bubble {
+    border-color: var(--ink);
+}
+
+.quizportal-exam .answer.quizportal-exam__answers--letters .quizportal-exam__bubble {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+}
+
+.quizportal-exam .quizportal-exam__label--letter .flex-fill { display: none; }
+
+.quizportal-exam .qtype_multichoice_clearchoice a { font-size: 13px; color: var(--ink-faint); }
+
+/* The stimulus block is a description question: same stripping. */
+.quizportal-exam__stimulus .que .qtext { margin-bottom: 0; }
+
+/* Listening: a group has to fit on one screen, because the recording will not
+   wait while the candidate scrolls. A Part 1 photo is capped so the bubbles
+   stay in view, and Part 3/4 options sit two to a row. */
+.quizportal-exam__stage--listening .que .qtext img {
+    max-height: 48vh;
+    width: auto;
+}
+
+@media (min-width: 900px) {
+    .quizportal-exam__stage--listening .que.multichoice .answer:not(.quizportal-exam__answers--letters) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 8px;
+    }
+
+    .quizportal-exam__stage--listening .quizportal-exam__q { margin-bottom: 16px; }
+}
+
+/* --- Reading: main column + answer sheet --------------------------------- */
+
+.quizportal-exam__stage--reading {
+    max-width: 1280px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 272px;
+    gap: 28px;
+    align-items: start;
+}
+
+.quizportal-exam__pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.quizportal-exam__pager-label { font-size: 13.5px; color: var(--ink-soft); }
+
+.quizportal-exam__sheet {
+    position: sticky;
+    top: calc(var(--exam-bar) + 16px);
+    max-height: calc(100vh - var(--exam-bar) - 32px);
+    overflow-y: auto;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    padding: 18px 16px;
+}
+
+.quizportal-exam__sheet-head h2 { font-size: 17px; margin: 0 0 2px; }
+.quizportal-exam__sheet-head p { font-size: 13px; color: var(--ink-soft); margin: 0 0 12px; }
+
+.quizportal-exam__sheet h3 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 14px 0 6px;
+}
+
+.quizportal-exam__cells {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.quizportal-exam__cell {
+    position: relative;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    padding: 3px 0;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.quizportal-exam__cell:hover { border-color: var(--ink-soft); }
+.quizportal-exam__cell.is-answered { background: var(--ink); border-color: var(--ink); color: #fff; }
+.quizportal-exam__cell.is-current { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Flagged: a folded corner. The accent triangle sits on a slightly larger one
+   in the paper colour, so its edge stays clear on a filled cell too (accent on
+   ink alone is only 2.8:1). */
+.quizportal-exam__cell.is-flagged::before,
+.quizportal-exam__cell.is-flagged::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    border-style: solid;
+    border-color: transparent;
+}
+
+.quizportal-exam__cell.is-flagged::before { border-width: 0 13px 13px 0; border-right-color: var(--sheet); }
+.quizportal-exam__cell.is-flagged::after { border-width: 0 11px 11px 0; border-right-color: var(--accent); }
+
+/* Flag count and "next flagged" under the sheet's heading. */
+.quizportal-exam__sheet-flags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 10px;
+    margin: -6px 0 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+
+.quizportal-exam__sheet-flagcount { display: inline-flex; align-items: center; gap: 6px; }
+
+.quizportal-exam__cell--key {
+    display: inline-block;
+    width: 22px;
+    height: 16px;
+    padding: 0;
+    cursor: default;
+}
+
+.quizportal-exam__linkbtn[disabled] { color: var(--ink-disabled); text-decoration: none; cursor: default; }
+
+.quizportal-exam__message .quizportal-exam__flagged-note {
+    padding: 10px 14px;
+    background: var(--accent-tint);
+    color: var(--ink);
+}
+
+.quizportal-exam__submit { padding: 7px 16px; font-size: 14px; }
+
+.quizportal-exam__dialog {
+    max-width: 440px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    padding: 26px 28px;
+    background: var(--sheet);
+    color: var(--ink);
+}
+
+.quizportal-exam__dialog::backdrop { background: rgba(20, 48, 58, 0.45); }
+.quizportal-exam__dialog h2 { font-size: 22px; margin: 0 0 10px; }
+.quizportal-exam__dialog-list { font-size: 13.5px; color: var(--ink-soft); }
+.quizportal-exam__dialog-flagged { font-size: 13.5px; padding: 8px 12px; background: var(--accent-tint); }
+/* Accent on this tint is 4.22:1; accent-dark 5.76:1. */
+.quizportal-exam__dialog-flagged .quizportal-exam__linkbtn { color: var(--accent-dark); }
+.quizportal-exam__dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* --- Narrow screens ------------------------------------------------------ */
+
+@media (max-width: 900px) {
+    .quizportal-exam__stage--reading { grid-template-columns: minmax(0, 1fr); }
+    .quizportal-exam__sheet { position: static; max-height: none; }
+    .quizportal-exam__cells { grid-template-columns: repeat(10, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .quizportal-exam__bar { padding: 8px 12px; gap: 10px; }
+    .quizportal-exam__bar-left { flex: 1; }
+    .quizportal-exam__bar-right { gap: 8px; flex-shrink: 0; }
+    .quizportal-exam__brand-mark,
+    .quizportal-exam__preview-tag,
+    .quizportal-exam__section,
+    .quizportal-exam__timer-label,
+    .quizportal-exam__save { display: none; }
+    .quizportal-exam__timer { padding: 2px 8px; }
+    .quizportal-exam__timer-value { font-size: 16px; min-width: 0; }
+    .quizportal-exam__submit { padding: 6px 10px; }
+    .quizportal-exam__stage { padding: 16px 12px 64px; }
+    .quizportal-exam__group,
+    .quizportal-exam__gate,
+    .quizportal-exam__message { padding: 20px 16px 8px; }
+    .quizportal-exam__q { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .quizportal-exam__qside { flex-direction: row; }
+    .quizportal-exam__cells { grid-template-columns: repeat(5, 1fr); }
+}
+
+
+
+/* ===========================================================================
+   Results page (review.php) - score report, Part breakdown, marked answers.
+
+   Builds on the exam page's classes above. The first page allowed to use
+   --correct and --wrong, and never by colour alone: every mark also differs in
+   shape (filled, outlined, dashed) and says what it is in words.
+   =========================================================================== */
+
+#page-local-quizportal-review #page { margin: 0; padding: 0; }
+
+.quizportal-result .qtext img { max-width: 100%; max-height: 60vh; height: auto; border: 1px solid var(--line); }
+.quizportal-result .qtext p { margin: 0 0 8px; }
+
+.quizportal-result__main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+}
+
+.quizportal-result__eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 4px;
+}
+
+/* --- Summary: ticket + source note on the left, Parts on the right -------- */
+
+.quizportal-result__summary {
+    display: grid;
+    grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+    grid-template-areas: "ticket parts" "source parts";
+    column-gap: 32px;
+    align-items: start;
+    margin-bottom: 40px;
+}
+
+.quizportal-result__ticket { grid-area: ticket; }
+.quizportal-result__source { grid-area: source; }
+.quizportal-result__parts { grid-area: parts; }
+
+/* The score report is the ticket from the login page, stamped: same dotted ink
+   masthead, same two notches punched into the seam. */
+.quizportal-result__ticket {
+    background: var(--sheet);
+    box-shadow: 0 24px 60px -24px rgba(20, 48, 58, 0.35);
+}
+
+.quizportal-result__masthead {
+    position: relative;
+    background: var(--ink);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.2px);
+    background-size: 20px 20px;
+    color: var(--on-ink);
+    padding: 18px 28px;
+}
+
+.quizportal-result__masthead::before,
+.quizportal-result__masthead::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper);
+}
+
+.quizportal-result__masthead::before { left: -9px; }
+.quizportal-result__masthead::after { right: -9px; }
+
+.quizportal-result__masthead .quizportal-result__eyebrow { color: var(--on-ink-soft); }
+.quizportal-result__when { margin: 0; font-size: 12.5px; color: var(--on-ink-faint); }
+
+.quizportal-result__score { padding: 26px 28px 24px; }
+
+.quizportal-result__total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+}
+
+.quizportal-result__total-value {
+    font-size: 68px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.quizportal-result__total-max { font-size: 20px; color: var(--ink-faint); }
+
+.quizportal-result__estimate {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.quizportal-result__sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 22px 0 0;
+    padding-top: 20px;
+    border-top: 1px dashed var(--line);
+}
+
+.quizportal-result__section dt {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.quizportal-result__section dd { margin: 0; }
+.quizportal-result__section-score { font-size: 14px; color: var(--ink-faint); }
+
+.quizportal-result__section-score strong {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 30px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.quizportal-result__section-raw { font-size: 13px; color: var(--ink-soft); }
+
+.quizportal-result__section .quizportal-result__meter { height: 4px; margin-top: 8px; background: var(--line); }
+.quizportal-result__meter span { display: block; height: 100%; }
+.quizportal-result__section--listening .quizportal-result__meter span { background: var(--ink); }
+.quizportal-result__section--reading .quizportal-result__meter span { background: var(--accent); }
+
+.quizportal-result__source {
+    margin: 14px 0 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink-faint);
+}
+
+.quizportal-result__parts h2,
+.quizportal-result__review h2 { font-size: 22px; margin: 0 0 12px; }
+
+.quizportal-result__parts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+}
+
+.quizportal-result__parts-table th {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.quizportal-result__parts-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.quizportal-result__parts-table tr:last-child td { border-bottom: 0; }
+
+/* Same key as the dashboard and the import report: ink Listening, accent Reading. */
+.quizportal-result__parts-table tr.is-listening td:first-child { box-shadow: inset 3px 0 0 var(--ink); }
+.quizportal-result__parts-table tr.is-reading td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+.quizportal-result__num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.quizportal-result__bar-cell { width: 42%; white-space: nowrap; }
+
+.quizportal-result__bar {
+    display: inline-block;
+    vertical-align: middle;
+    width: calc(100% - 52px);
+    height: 6px;
+    background: var(--line);
+}
+
+.quizportal-result__bar span { display: block; height: 100%; }
+.is-listening .quizportal-result__bar span { background: var(--ink); }
+.is-reading .quizportal-result__bar span { background: var(--accent); }
+
+.quizportal-result__pct {
+    display: inline-block;
+    width: 44px;
+    text-align: right;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Review: filters, one group at a time, marked answer sheet ------------ */
+
+.quizportal-result__review-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.quizportal-result__filters { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.quizportal-result__filter {
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.quizportal-result__filter span { color: var(--ink-faint); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.quizportal-result__filter:hover { border-color: var(--ink-soft); }
+.quizportal-result__filter[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.quizportal-result__filter[aria-pressed="true"] span { color: var(--on-ink-soft); }
+
+/* Accent on ink is too dark to read, so the pressed flag turns white. */
+.quizportal-result__filter--flagged { display: inline-flex; align-items: center; gap: 6px; }
+.quizportal-result__filter--flagged span { margin-left: 0; }
+.quizportal-result__filter--flagged .quizportal-exam__flag-icon { color: var(--accent); }
+.quizportal-result__filter--flagged[aria-pressed="true"] .quizportal-exam__flag-icon { color: #fff; }
+.quizportal-result__filter--flagged[aria-pressed="true"] .quizportal-exam__flag-cloth { fill: currentColor; }
+
+/* "Đã đánh dấu chưa chắc" in the verdict line: accent-dark, 6.7:1 on the sheet. */
+.quizportal-result__flagged { color: var(--accent-dark); font-weight: 600; }
+
+.quizportal-result__stage { padding: 0; }
+
+/* Without the script every group is listed; keep them apart. */
+.quizportal-result__group { margin-bottom: 16px; }
+
+.quizportal-result__group-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+.quizportal-result__group-head h3 {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 21px;
+    margin: 0;
+}
+
+.quizportal-result__replay { padding: 7px 16px; font-size: 13.5px; white-space: nowrap; }
+.quizportal-result__replay[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+
+/* Question number: filled for right and wrong, dashed for blank. */
+.quizportal-result__q.is-right .quizportal-exam__qno { background: var(--correct); }
+.quizportal-result__q.is-wrong .quizportal-exam__qno { background: var(--wrong); }
+
+.quizportal-result__q.is-blank .quizportal-exam__qno {
+    background: transparent;
+    border: 1.5px dashed var(--ink-faint);
+    color: var(--ink-soft);
+}
+
+.quizportal-result__options { list-style: none; margin: 0 0 8px; padding: 0; }
+
+.quizportal-result__option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+}
+
+.quizportal-result__option-text { flex: 1; }
+
+.quizportal-result__option-text p:last-child { margin-bottom: 0; }
+
+.quizportal-result__tag {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Chosen, when correctness is not being shown: just the pencil mark. */
+.quizportal-result__option.is-chosen .quizportal-exam__bubble {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+.quizportal-result__option.is-right { border-color: var(--correct); }
+.quizportal-result__option.is-right .quizportal-result__tag { color: var(--correct); }
+.quizportal-result__option.is-right .quizportal-exam__bubble {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: #fff;
+}
+
+.quizportal-result__option.is-wrongchoice { border-color: var(--wrong); }
+.quizportal-result__option.is-wrongchoice .quizportal-result__tag { color: var(--wrong); }
+.quizportal-result__option.is-wrongchoice .quizportal-exam__bubble {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: #fff;
+}
+
+/* Part 1 and 2: a row of bare bubbles, as on the exam page; the verdict line
+   below says the rest, so the tags go. */
+.quizportal-result__options.is-letters { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.quizportal-result__options.is-letters .quizportal-result__option {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+}
+
+.quizportal-result__options.is-letters .quizportal-exam__bubble { width: 40px; height: 40px; font-size: 15px; }
+.quizportal-result__options.is-letters .quizportal-result__tag { display: none; }
+
+.quizportal-result__verdict { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-soft); }
+.quizportal-result__q.is-right .quizportal-result__verdict strong { color: var(--correct); }
+.quizportal-result__q.is-wrong .quizportal-result__verdict strong { color: var(--wrong); }
+.quizportal-result__q.is-blank .quizportal-result__verdict strong { color: var(--ink); }
+
+.quizportal-result__explain {
+    background: var(--paper);
+    border-left: 3px solid var(--line);
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+.quizportal-result__explain p:last-child { margin-bottom: 0; }
+
+.quizportal-result__explain-head,
+.quizportal-result__script summary {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 4px;
+}
+
+.quizportal-result__script {
+    margin: 4px 0 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+}
+
+.quizportal-result__script summary { cursor: pointer; margin-bottom: 8px; }
+.quizportal-result__script-body { font-size: 14.5px; line-height: 1.65; }
+.quizportal-result__script-body p { margin: 0 0 6px; }
+
+.quizportal-result__empty {
+    padding: 28px;
+    text-align: center;
+    background: var(--sheet);
+    border: 1px dashed var(--line);
+    color: var(--ink-soft);
+}
+
+/* Marked answer sheet: cells are links here, so they can be opened in place. */
+.quizportal-result .quizportal-exam__cell {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.quizportal-result .quizportal-exam__cell.is-right { color: var(--correct); border-color: var(--correct); font-weight: 600; }
+.quizportal-result .quizportal-exam__cell.is-wrong { background: var(--wrong); border-color: var(--wrong); color: #fff; }
+.quizportal-result .quizportal-exam__cell.is-blank { border-style: dashed; border-color: var(--ink-faint); color: var(--ink-faint); }
+
+.quizportal-result__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    list-style: none;
+    margin: 4px 0 6px;
+    padding: 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+}
+
+.quizportal-result__legend li { display: flex; align-items: center; gap: 6px; }
+.quizportal-result__legend .quizportal-exam__cell { display: inline-block; width: 30px; font-size: 11px; cursor: default; }
+
+@media (max-width: 900px) {
+    .quizportal-result__summary {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "ticket" "source" "parts";
+        row-gap: 24px;
+    }
+}
+
+@media (max-width: 600px) {
+    .quizportal-result__main { padding: 16px 12px 64px; }
+    .quizportal-result__total-value { font-size: 56px; }
+    .quizportal-result__score { padding: 22px 20px 20px; }
+    .quizportal-result__group-head { flex-direction: column; }
+    .quizportal-result__bar-cell { width: 34%; }
+}
+
+/* ---------------------------------------------------------------------------
+   Score conversion editor (scale.php). Admin layout: Bootstrap does the rest.
+   --------------------------------------------------------------------------- */
+
+.quizportal-scale { max-width: 760px; }
+.quizportal-scale__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.quizportal-scale__table input { max-width: 110px; }
+.quizportal-scale__table thead th { position: sticky; top: 0; background: var(--sheet); z-index: 1; }
+.quizportal-scale__changed { background: var(--accent-tint); }

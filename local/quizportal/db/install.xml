@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/quizportal/db" VERSION="20260921" COMMENT="XMLDB file for Moodle local/quizportal"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_quizportal_slotmeta" COMMENT="TOEIC facts about one quiz slot that core has nowhere to keep. Chiefly where in the single Listening recording a question begins: the whole of Part 1-4 is one audio file, so every question needs its own offset. Also carries the Part number and the shared-stimulus code, so the exam and review pages can group slots without re-deriving the structure from tags.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key references quiz.id."/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key references question.id."/>
+        <FIELD NAME="slot" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Slot number within the quiz, matching quiz_slots.slot."/>
+        <FIELD NAME="part" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="TOEIC part, 1 to 7."/>
+        <FIELD NAME="questionnumber" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Printed question number. Null for a shared-stimulus block, which occupies a slot but is not a numbered question."/>
+        <FIELD NAME="audiostart" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Seconds into the Listening recording where this question begins. Null when the workbook left the mark blank, which is allowed: marks are often filled in after the questions."/>
+        <FIELD NAME="passagecode" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="Code of the shared stimulus this slot belongs to, as written on the passages sheet. Null for a standalone question."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="quizid" TYPE="foreign" FIELDS="quizid" REFTABLE="quiz" REFFIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="quizid-slot" UNIQUE="true" FIELDS="quizid, slot"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_quizportal_attemptstate" COMMENT="Where a candidate stands in the two halves of a TOEIC attempt. Core tracks one attempt as a set of pages; the exam page needs to know when the Listening recording started (it plays on the wall clock, so a reload resumes where the recording now is rather than replaying it), when Listening closed for good, and whether Reading has been opened.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key references quiz_attempts.id."/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Foreign key references quiz.id. Kept so rows can be swept by quiz: deleting a preview attempt fires no event."/>
+        <FIELD NAME="listenstart" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="When the recording started playing. Null until the candidate presses start."/>
+        <FIELD NAME="listenduration" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Length of the recording in seconds, as the browser measured it when playback started."/>
+        <FIELD NAME="listenend" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="When Listening closed. From then on Part 1-4 answers are frozen."/>
+        <FIELD NAME="readingstart" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="When the candidate left the bridge page and opened Reading."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="attemptid" TYPE="foreign-unique" FIELDS="attemptid" REFTABLE="quiz_attempts" REFFIELDS="id"/>
+        <KEY NAME="quizid" TYPE="foreign" FIELDS="quizid" REFTABLE="quiz" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

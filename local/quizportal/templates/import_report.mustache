@@ -1,0 +1,118 @@
+{{!
+    @template local_quizportal/import_report
+
+    Outcome of one TOEIC paper upload: why nothing was saved, or what was built.
+
+    Example context (json):
+    {
+        "succeeded": true,
+        "quizname": "Đề 01 — Practice Test 1",
+        "coursename": "TOEIC",
+        "ishidden": true,
+        "questions": 200,
+        "passages": 42,
+        "minutes": 120,
+        "parts": [
+            {"heading": "Part 1 — Mô tả tranh", "count": 6, "expected": 6, "offstandard": false, "islistening": true}
+        ],
+        "audio": "Test_01.mp3",
+        "audiosize": "42.1 MB",
+        "haslistening": true,
+        "listeningquestions": 100,
+        "audiomarks": 0,
+        "marksincomplete": true,
+        "haswarnings": false,
+        "warningcount": 0,
+        "warnings": [],
+        "viewurl": "#",
+        "courseurl": "#",
+        "againurl": "#",
+        "strnewpage": "New page",
+        "strrepaginatenow": "Repaginate now",
+        "strrepaginate": "Repaginate",
+        "strshuffle": "Shuffle"
+    }
+}}
+<div class="quizportal-import">
+{{#failed}}
+    <div class="alert alert-danger" role="alert">
+        <h3 class="h5">{{headline}}</h3>
+        <p>Chưa có gì được lưu. Sửa file đề rồi tải lên lại.</p>
+        <ul class="mb-0">
+            {{#errors}}<li>{{.}}</li>{{/errors}}
+        </ul>
+        {{#moreerrors}}<p class="mt-2 mb-0">… và {{moreerrors}} lỗi khác.</p>{{/moreerrors}}
+    </div>
+{{/failed}}
+
+{{#succeeded}}
+    <p class="pt-label mb-1">Đã nhập vào {{coursename}}</p>
+    <h3 class="quizportal-import__title">
+        {{quizname}}
+        {{#ishidden}}<span class="pt-pill">Đang ẩn</span>{{/ishidden}}
+        {{^ishidden}}<span class="pt-pill">Học viên đã thấy</span>{{/ishidden}}
+    </h3>
+
+    <dl class="quizportal-import__facts">
+        <div><dt class="pt-label">Câu hỏi</dt><dd>{{questions}}</dd></div>
+        <div><dt class="pt-label">Khối ngữ liệu</dt><dd>{{passages}}</dd></div>
+        <div><dt class="pt-label">Thời gian</dt><dd>{{#minutes}}{{minutes}} phút{{/minutes}}{{^minutes}}không giới hạn{{/minutes}}</dd></div>
+        <div><dt class="pt-label">File nghe</dt><dd>{{#audio}}{{audio}} <span class="text-muted">({{audiosize}})</span>{{/audio}}{{^audio}}không có{{/audio}}</dd></div>
+    </dl>
+
+    <table class="table table-sm quizportal-import__parts">
+        <thead>
+            <tr><th scope="col">Phần</th><th scope="col" class="text-right">Số câu</th></tr>
+        </thead>
+        <tbody>
+            {{#parts}}
+            <tr class="{{#islistening}}is-listening{{/islistening}}{{^islistening}}is-reading{{/islistening}}">
+                <td>{{heading}}</td>
+                <td class="text-right">{{count}}{{#offstandard}} <span class="text-muted">/ đề chuẩn {{expected}}</span>{{/offstandard}}</td>
+            </tr>
+            {{/parts}}
+        </tbody>
+    </table>
+
+    {{#marksincomplete}}
+    <div class="alert alert-warning">
+        <strong>Mốc âm thanh: {{audiomarks}}/{{listeningquestions}} câu phần nghe.</strong>
+        Cột <code>audio_start</code> còn trống. Đề vẫn làm được, nhưng trang làm bài sẽ
+        không biết câu nào nằm ở đoạn nào của file nghe.
+    </div>
+    {{/marksincomplete}}
+
+    {{#haswarnings}}
+    <div class="alert alert-warning">
+        <strong>Cảnh báo từ file đề ({{warningcount}})</strong>
+        <ul class="mb-0">
+            {{#warnings}}<li>{{.}}</li>{{/warnings}}
+        </ul>
+    </div>
+    {{/haswarnings}}
+
+    <div class="quizportal-import__care">
+        <h4 class="h6">Trước khi mở cho học viên</h4>
+        <ol>
+            <li>Bấm <em>Xem đề</em>, xem thử mỗi Part một câu: ảnh, ngữ liệu, đáp án.</li>
+            <li>Ổn rồi thì bật hiển thị cho đề ở trang khoá học.</li>
+            <li>
+                Đề đã được chia trang theo nhóm câu và theo 7 Part. Đừng đổi ô
+                <em>{{strnewpage}}</em> hay tick <em>{{strrepaginatenow}}</em> trong cài đặt đề,
+                đừng bấm <em>{{strrepaginate}}</em> hay bật <em>{{strshuffle}}</em> ở trang sửa câu hỏi.
+                Làm thế sẽ tách câu hỏi khỏi bài đọc và lệch thứ tự với file nghe.
+            </li>
+            <li>
+                Đừng nhân bản (Duplicate) hay sao lưu rồi khôi phục đề này: bản sao sẽ mất file nghe.
+                Cần thêm một bản thì nhập lại file .zip.
+            </li>
+        </ol>
+    </div>
+
+    <div class="quizportal-import__actions">
+        <a class="btn btn-primary" href="{{viewurl}}">Xem đề</a>
+        <a class="btn btn-secondary" href="{{courseurl}}">Mở khoá học</a>
+        <a class="btn btn-link" href="{{againurl}}">Nhập đề khác</a>
+    </div>
+{{/succeeded}}
+</div>

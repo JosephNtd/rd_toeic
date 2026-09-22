@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/exam_listening
+
+    Part 1-4. One recording plays straight through; the group on screen follows
+    it (see local_quizportal/exam). Staff previewing the paper get the browser's
+    own audio controls so they can seek.
+
+    Context variables required for this template:
+    * audiourl, started, position, duration, total
+    * firstpart, firstdirections - shown before the first question is read
+    * groups - see local_quizportal/exam_group
+    * ispreview - from the page
+
+    Example context (json):
+    {
+        "audiourl": "#", "started": false, "position": 0, "duration": 0, "total": 100,
+        "firstpart": "Part 1 — Mô tả tranh", "firstdirections": "…", "groups": [], "ispreview": false
+    }
+}}
+<div class="quizportal-exam__stage quizportal-exam__stage--listening">
+
+    <div class="quizportal-exam__player" data-region="player">
+        {{! No controls for candidates: the recording has no pause and no rewind. }}
+        <audio src="{{audiourl}}" preload="auto" data-region="audio" {{#ispreview}}controls{{/ispreview}}></audio>
+        <div class="quizportal-exam__player-row">
+            <span class="quizportal-exam__player-state" data-region="player-state">Chưa phát</span>
+            <span class="quizportal-exam__player-where" data-region="player-where"></span>
+            <span class="quizportal-exam__player-time">
+                <span data-region="player-time">0:00</span> / <span data-region="player-duration">–:––</span>
+            </span>
+        </div>
+        <div class="quizportal-exam__progress" aria-hidden="true">
+            <div class="quizportal-exam__progress-fill" data-region="player-progress"></div>
+        </div>
+        <label class="quizportal-exam__volume">
+            <span>Âm lượng</span>
+            <input type="range" min="0" max="1" step="0.05" value="1" data-region="volume">
+        </label>
+    </div>
+
+    <div class="quizportal-exam__gate" data-region="gate">
+        <div data-region="gate-start" {{#started}}hidden{{/started}}>
+            <h1>Phần nghe</h1>
+            <ul>
+                <li>Gồm {{total}} câu, Part 1 đến Part 4, nghe liền một mạch khoảng 45 phút.</li>
+                <li>Âm thanh chỉ phát <strong>một lần</strong>: không dừng, không tua, không quay lại câu trước.</li>
+                <li>Câu hỏi tự chuyển theo âm thanh. Chọn đáp án ngay khi nghe.</li>
+                <li>
+                    Chưa chắc câu nào thì bấm nút cờ <span class="quizportal-exam__flag-inline">{{> local_quizportal/flag_icon }}</span>
+                    dưới số câu. Câu đã qua thì không sửa được, nhưng sau khi nộp bài bạn xem lại được riêng các câu đã đánh dấu.
+                </li>
+                <li>Nếu lỡ tải lại trang, âm thanh vẫn chạy tiếp theo đồng hồ — đoạn đã lỡ sẽ không phát lại.</li>
+            </ul>
+            <p>Đeo tai nghe và kiểm tra âm lượng trước khi bắt đầu.</p>
+        </div>
+        <div data-region="gate-resume" {{^started}}hidden{{/started}}>
+            <h1>Phần nghe đang chạy</h1>
+            <p>Như trong phòng thi, băng không dừng khi bạn rời trang. Bấm nút để nghe tiếp từ đoạn đang phát.</p>
+        </div>
+        <div data-region="gate-paused" hidden>
+            <h1>Âm thanh đã dừng</h1>
+            <p>Băng vẫn chạy trong lúc dừng. Bấm nút để nghe tiếp từ đoạn đang phát.</p>
+        </div>
+        <p class="quizportal-exam__gate-error" data-region="gate-error" role="alert" hidden></p>
+        <button type="button" class="quizportal-exam__btn quizportal-exam__btn--primary" data-action="play">
+            {{^started}}Bắt đầu phần nghe{{/started}}{{#started}}Nghe tiếp{{/started}}
+        </button>
+    </div>
+
+    {{#ispreview}}
+        <p class="quizportal-exam__staff">
+            Xem thử dành cho giáo viên: được tua bằng thanh âm thanh.
+            <button type="button" class="quizportal-exam__linkbtn" data-action="skip-listening">Bỏ qua phần nghe</button>
+        </p>
+    {{/ispreview}}
+
+    <section class="quizportal-exam__group quizportal-exam__intro" data-region="intro">
+        <header class="quizportal-exam__part">
+            <p class="quizportal-exam__eyebrow">Listening Test</p>
+            <h2>{{firstpart}}</h2>
+            <p>{{firstdirections}}</p>
+        </header>
+        <p class="quizportal-exam__hint">Câu 1 sẽ hiện khi âm thanh đọc tới.</p>
+    </section>
+
+    {{#groups}}
+        {{> local_quizportal/exam_group }}
+    {{/groups}}
+</div>
