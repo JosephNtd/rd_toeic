@@ -1,0 +1,107 @@
+// ==========================================================================
+// PTEducation - He thong thiet ke "Giay & Muc" (Paper & Ink)
+//
+// Prepended before Boost's preset. Every variable in that preset carries
+// !default, so what is set here wins site-wide, admin pages included.
+//
+// Contrast: every text/background pair below was checked against the WCAG
+// formula. Nothing here falls below AA. Do not lighten these without
+// re-checking - the numbers in the comments are the measured ratios.
+// ==========================================================================
+
+// --- Palette -------------------------------------------------------------
+$pt-paper:        #f7f5f0;  // warm oat ground
+$pt-sheet:        #fffdf9;  // warm white, raised surfaces
+$pt-ink:          #14303a;  // deep petrol - headings, body, brand   12.73 AAA
+$pt-ink-soft:     #46626e;  // secondary text                         5.96 AA
+$pt-ink-faint:    #5f727c;  // meta / small labels                    4.61 AA
+$pt-ink-disabled: #8496a0;  // inactive controls only (WCAG exempt)   2.81
+$pt-line:         #ded8cd;  // warm hairline, ties to the paper ground
+
+// The single accent. Terracotta, not red: red is spoken for below.
+$pt-accent:       #a75d1b;  // 4.56 on paper, 4.97 with white on it   AA
+$pt-accent-dark:  #884c16;  // hover                                  6.79 AA
+
+// Reserved semantics. These two are NEVER spent on chrome - a quiz app needs
+// them to mean "dung" and "sai" on the review screen, and nothing else.
+$pt-correct:      #2e7d52;  // 4.62 AA
+$pt-wrong:        #b3261e;  // 6.00 AA
+
+// --- Warm grey ramp ------------------------------------------------------
+// Boost ships a cool ramp (#f8f9fa -> #1d2125). Swapping it for a warm one is
+// what stops the admin side reading as cold generic software. Low end is warm
+// paper, high end resolves into the petrol ink.
+$gray-100: #f7f5f0;
+$gray-200: #efebe3;
+$gray-300: #ded8cd;
+$gray-400: #c7bfb1;
+$gray-500: #9a9184;
+$gray-600: #6e7b82;
+$gray-700: #46626e;
+$gray-800: #2a4650;
+$gray-900: #14303a;
+
+// --- Bootstrap semantic colours -----------------------------------------
+// $primary drives buttons and chrome, and is the calm ink rather than the
+// accent: Moodle puts a lot of .btn-primary on screen, and terracotta
+// everywhere would spend the accent the design reserves for real calls to
+// action. Links get the accent instead, so they stay distinguishable from
+// body text - dark-on-dark links would have no affordance.
+$primary:   $pt-ink;
+$secondary: $gray-300;
+$success:   $pt-correct;
+$danger:    $pt-wrong;
+$warning:   #b07d18;
+$info:      #2d6373;
+$light:     $pt-paper;
+$dark:      $pt-ink;
+
+$body-bg:    $pt-paper;
+$body-color: $pt-ink;
+
+$link-color:            $pt-accent;
+$link-hover-color:      $pt-accent-dark;
+$link-decoration:       underline;
+$link-hover-decoration: underline;
+
+// --- Shape ---------------------------------------------------------------
+// The old design used border-radius: 0 everywhere to dodge the AI-generated
+// "rounded card" look. Taken absolutely that reads brutalist rather than like
+// paper. 2-3px softens the edge without becoming a SaaS card.
+$border-radius:    .1875rem;  // 3px
+$border-radius-sm: .125rem;   // 2px
+$border-radius-lg: .25rem;    // 4px
+$border-color:     $pt-line;
+$hr-border-color:  $pt-line;
+
+// --- Typography ----------------------------------------------------------
+// Lora for display, Be Vietnam Pro for everything else. Be Vietnam Pro carries
+// a full Vietnamese diacritic set; both are self-hosted (see post.scss).
+$font-family-sans-serif: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+$font-family-serif:      'Lora', Georgia, 'Times New Roman', serif;
+$headings-font-family:   $font-family-serif;
+$headings-color:         $pt-ink;
+$headings-font-weight:   600;
+
+$font-size-base:   0.9375rem;  // 15px
+$line-height-base: 1.6;
+
+// A real scale rather than four sizes a hair apart - the old sheet had
+// 19/21/15/13px doing four different jobs with almost no separation.
+$h1-font-size: 2rem;
+$h2-font-size: 1.5rem;
+$h3-font-size: 1.25rem;
+$h4-font-size: 1.0625rem;
+$h5-font-size: 0.9375rem;
+$h6-font-size: 0.8125rem;
+
+// --- Components ----------------------------------------------------------
+$card-bg:          $pt-sheet;
+$card-border-color: $pt-line;
+$table-border-color: $pt-line;
+$input-bg:         $pt-sheet;
+$input-border-color: $pt-line;
+$input-focus-border-color: $pt-accent;
+$input-placeholder-color:  $pt-ink-disabled;
+$component-active-bg: $pt-ink;
+$navbar-light-color:  $pt-ink-soft;
