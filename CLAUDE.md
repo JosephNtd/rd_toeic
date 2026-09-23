@@ -838,10 +838,20 @@ Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến ngh
   đoạn, tích dần). Không sửa code.
 - **Phát hiện chính: nút thắt là file nghe, không phải CPU.** `Test_01.mp3` =
   44.109.018 byte (42 MB, 128 kbps) và **đi qua PHP** vì `local_quizportal_pluginfile()`
-  phải chạy `can_listen()` mỗi request. Nếu trình duyệt stream đúng nhịp thì 200 người
-  chỉ ~26 Mbps; nếu tải nguyên file trong 5 phút thì ~235 Mbps. **Chênh 20 lần, chưa
-  ai đo.** Khuếch đại thêm vì `send_stored_file(..., 0, 0, ...)` đặt lifetime 0 →
-  không cache → mỗi lần F5 là tải lại.
+  phải chạy `can_listen()` mỗi request.
+- **ĐÃ ĐO THẬT** (lượt `#142`, trọn phần nghe 10:26–11:03, nguồn `C:\wamp64\logs\access.log`
+  của Apache — format `common` có cột byte, và **ghi lại rồi nên lấy được sau khi trang
+  đã chuyển**, không cần làm lại bài; DevTools mất log khi chuyển trang nếu quên tick
+  *Keep log*):
+  - **52,07 MB cho file nghe · 58,36 MB cả phiên thi → 11,4 GB cho 200 người.**
+  - **Chrome stream thật**, lấy khối ~4 MB đều đặn mỗi **~3 phút 17 giây** → tốc độ nền
+    chỉ 23,3 KB/s mỗi người = **~37 Mbps cho 200 người**. Nhẹ.
+  - **Đỉnh nằm ở 30 giây đầu:** buffer mở đầu 10 MB + 6 ảnh Part 1 3,5 MB + HTML 0,5 MB
+    = **~14 MB mỗi học viên**. 200 người cùng bấm "Bắt đầu" = 2,7 GB → **~750 Mbps**;
+    chia ca lệch 3 phút → **~125 Mbps**. Chia ca là **bắt buộc**, cắt đỉnh 6 lần, miễn phí.
+  - **Đính chính giả định sai của chính phiên này:** lifetime 0 **không** làm mất cache.
+    Log có **9 lần `304 Not Modified`** — trình duyệt có cache, chỉ hỏi lại (0 byte).
+    `lifetime 0` chỉ tốn thêm một vòng hỏi-đáp mỗi khối. **Giữ nguyên.**
 - **Đã xác minh `$CFG->xsendfile` dùng được** với code hiện tại: `send_stored_file()`
   → `file_system::supports_xsendfile()` (`lib/filestorage/file_system.php:499`). Bật
   nó thì PHP không bị giữ worker suốt lúc truyền. Gần như bắt buộc ở quy mô này.
@@ -860,6 +870,53 @@ Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến ngh
 - **3 việc gấp nhất, đều miễn phí:** push code lên private repo (hiện code CHỈ có trên
   máy này), đo băng thông file nghe bằng DevTools, thử Safari/iPhone (chưa từng thử —
   nếu Safari chặn autoplay thì phần nghe hỏng hoàn toàn trên iPhone/Mac).
+- **Viết `cli/site_settings.php`** — kiểm tra + đặt lại 4 cài đặt không nằm trong git.
+  Không tham số = chỉ báo cáo (thoát 1 nếu còn việc, dùng được trong script cài đặt),
+  `--apply` = đặt 3 cài đặt CSDL rồi purge cache.
+  - **`alternateloginurl` cố ý KHÔNG tự sửa.** Nó ở `config.php` nên là *forced
+    setting*: `set_config()` ghi vào CSDL mà site đang chạy bỏ qua — im lặng và sai.
+    Phát hiện nguồn bằng `$CFG->config_php_settings` (`lib/setup.php:419`). Script in
+    ra dòng cần dán; sửa hỏng `config.php` là sập cả site nên không đáng đánh đổi.
+  - Kiểm kèm `allowaccountssameemail = 0` — điều kiện để `authloginviaemail` không
+    nhập nhằng. Cũng không tự tắt: site đã có 2 tài khoản trùng email mà tắt là chặn
+    họ đăng nhập.
+  - **Test bắt được một lỗi:** khi chỉ `alternateloginurl` sai, script vẫn mách chạy
+    `--apply` — trong khi `--apply` không sửa được nó. Đã tách biến `$fixable`.
+  - Đã thử cả 3 nhánh trên site thật rồi trả về nguyên trạng: mọi thứ đúng → thoát 0;
+    thiếu `alternateloginurl` (giả lập bằng bản sao script trong scratchpad, **không**
+    đụng `config.php`) → in hướng dẫn, thoát 1; `fullnamedisplay` sai → báo đúng, rồi
+    `--apply` sửa lại. CSDL đã xác nhận về `lastname firstname`.
+- **Viết `cli/exam_recovery.php`** — trả lại cho **cả phòng thi** khoảng thời gian mất
+  vì sự cố server. Vá checkbox mục 5 của `moodle-ptedu-deploy.md`. Không đổi CSDL,
+  không bump version (chỉ thêm 2 phương thức vào `attempt_state`).
+  - **Sự cố gây ra BA thiệt hại, không phải một** — chỉ lộ ra khi đọc code:
+    (1) băng chạy tiếp; (2) **đồng hồ quiz cũng mất từng ấy phút** vì
+    `end_time = timestart + timelimit` (`quizaccess_timelimit/rule.php:48`);
+    (3) **ai F5 sau khi server sống lại bị `attempt_state::section()` đẩy sang trang
+    chuyển tiếp VĨNH VIỄN** — và `set_listening_position()` từ chối khi `listenend`
+    đã có. Cái thứ ba trừng phạt đúng những người mất nhiều nhất.
+  - Thêm `attempt_state::shift_listening_clock()` (dời **mọi** đồng hồ cùng một lượng,
+    khác `set_listening_position()` đặt tất cả về một mốc — đặt cùng mốc là bắt người
+    đang ở 40:00 nghe lại đoạn người ở 05:00 chỉ nghe một lần) và `reopen_listening()`
+    (**chỗ duy nhất luật một chiều bị bẻ**; từ chối khi đã sang phần đọc, và khi trả
+    thời gian vào rồi băng vẫn đã hết).
+  - Cộng lại đồng hồ quiz bằng cách dời `quiz_attempts.timestart`, **và `timecheckstate`
+    kèm theo** — cron tìm lượt quá giờ theo cột đó, bỏ quên là nó đóng bài theo giờ cũ.
+  - **Không có nút "tạm dừng", và không cần:** ghi giờ sự cố rồi trả lại đúng ngần ấy
+    phút sau khi hồi phục là cùng một phép toán, mà không phải thêm cột CSDL nào.
+  - Mặc định chỉ xem trước; `--apply` mới ghi, trong một transaction. In ra một dòng
+    để dán vào biên bản sự cố.
+  - **Test `tools/exam_e2e/recovery_check.php` — 39/39**, chạy chính script đó như một
+    tiến trình riêng (`exec`), 6 lượt ở 6 trạng thái. **Tự xoá 6 lượt của mình khi xong**
+    vì `class_check.php` từ chối chạy nếu `qp_hv*` đã có lượt — đã kiểm: chạy lại được
+    hai lần liên tiếp và `class_check` vẫn chạy được ngay sau nó.
+  - **Chạy thật mới lộ lỗi trình bày:** `--reopen` báo "KÉO LẠI 0 lượt" trong khi vẫn
+    có lượt ở trang chuyển tiếp, không nói vì sao. Đã thêm lý do + cột `BĂNG NGHE` ghi
+    "đã đóng · quá hết băng". Nới cột từ 22 lên 25 (chuỗi đó dài đúng 22, dính cột kế).
+  - **Còn mở:** chỉ có ở CLI (cần SSH), mà người trực phòng thi thường là giáo viên;
+    chưa ghi vào log sự kiện Moodle. Cả hai đã ghi vào `moodle-ptedu-deploy.md`.
+  - Dữ liệu thật không bị đụng: lượt `#142` của người dùng giữ nguyên `timestart`
+    10:26:03, sau teardown còn 0 khoá `qptest`, 0 tài khoản `qp_`, `attemptstate` 4 dòng.
 - **Vẫn chưa commit git** (B3, sao lưu, B2, B4 từ các phiên trước, cộng file mới này).
 
 ### 2026-09-22 (phiên 11) — tên lớp trên thẻ đề, B4 quản lý học viên

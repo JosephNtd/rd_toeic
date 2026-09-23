@@ -230,6 +230,59 @@ class attempt_state {
     }
 
     /**
+     * Give back time the site was down for: wind this Listening clock back.
+     *
+     * Not set_listening_position(): that puts a clock at one named second, which
+     * across a room would tell whoever was at 40:00 what whoever was at 05:00 is
+     * hearing. This shifts every clock by the same amount instead, so each
+     * candidate resumes exactly where the outage caught them, and nobody hears a
+     * second of the recording twice that their neighbour hears once.
+     *
+     * @param int $seconds how much time to give back
+     * @return bool false when playback never started, or Listening is already over
+     */
+    public function shift_listening_clock(int $seconds): bool {
+        if ($this->field('listenstart') === null || $this->field('listenend') !== null) {
+            return false;
+        }
+        $this->update(['listenstart' => (int) $this->field('listenstart') + max(0, $seconds)]);
+        return true;
+    }
+
+    /**
+     * Reopen Listening that section() closed while the site was down.
+     *
+     * The one place the one-way rule bends, and only from the command line. An
+     * outage runs the wall clock past the end of the recording, so the first page
+     * load after recovery sends whoever was near the end to the bridge for good -
+     * punishing exactly the candidates who lost the most.
+     *
+     * Refuses once Reading has been opened: that candidate has already seen Part
+     * 5-7, and letting them back into Listening would hand them time nobody else
+     * gets. Refuses too when the recording would have finished anyway even with
+     * the time given back, because then the bridge is where they belong.
+     *
+     * @param int $now
+     * @param int $seconds how much time to give back
+     * @return bool whether Listening is open again
+     */
+    public function reopen_listening(int $now, int $seconds): bool {
+        if ($this->field('listenend') === null || $this->field('readingstart') !== null) {
+            return false;
+        }
+        $start = $this->field('listenstart');
+        if ($start === null) {
+            return false;
+        }
+        $newstart = $start + max(0, $seconds);
+        if ($now - $newstart >= (int) $this->field('listenduration')) {
+            return false;
+        }
+        $this->update(['listenstart' => $newstart, 'listenend' => null]);
+        return true;
+    }
+
+    /**
      * @return array{started: bool, ended: bool, readingstarted: bool} for status reports
      */
     public function summary(): array {

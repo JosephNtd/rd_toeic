@@ -21,21 +21,62 @@ File nghe **đi qua PHP**, không phải web server phục vụ thẳng — vì
 `local_quizportal_pluginfile()` (`lib.php:75`) phải chạy `can_listen()` trên từng
 request để kiểm tra người này có lượt làm đang chạy không.
 
-### Hai kịch bản chênh nhau 20 lần
+### ✅ Số đo thật — 2026-09-23
 
-| Cách trình duyệt lấy file | Băng thông cho 200 người |
-|---|---|
-| Stream đúng nhịp phát (Range request) | ~16 KB/s mỗi người → **~26 Mbps** |
-| Tải nguyên file, tất cả vào trong 5 phút | 8,8 GB → **~235 Mbps** |
-| Tải nguyên file, tất cả vào trong 2 phút | **~590 Mbps** |
+Đo trên lượt làm `#142`, một học viên, trọn phần nghe 10:26 → 11:03.
 
-**Yếu tố khuếch đại:** `send_stored_file($file, 0, 0, ...)` đặt lifetime 0 → trình
-duyệt **không cache**. Mà thiết kế phần nghe lại khuyến khích tải lại trang ("F5 là
-nghe tiếp đúng chỗ băng đang chạy") → mỗi lần F5 là một lần tải lại.
+**Nguồn: `C:\wamp64\logs\access.log` của Apache**, không phải DevTools. Log ghi mọi
+request kèm số byte thật, và nó **đã ghi rồi** — lấy được cả sau khi trang đã chuyển,
+không cần làm lại bài. (DevTools mất log khi chuyển trang nếu quên tick **Keep log**.)
 
-> **Chưa ai đo con số thật.** Đây là việc số 1 ở Giai đoạn 1, làm được ngay, không
-> tốn đồng nào: DevTools › Network › làm trọn một lượt → xem dòng mp3 báo
-> *Transferred* bao nhiêu byte. Nhân 200. Con số đó chọn gói băng thông.
+|                                              | Mỗi học viên                 | × 200 học viên  |
+| -------------------------------------------- | ------------------------------- | ------------------ |
+| File nghe                                    | **52,07 MB** (20 request) | **10,2 GB**  |
+| Cả phiên thi (HTML + ảnh + CSS/JS + nghe) | **58,36 MB**              | **11,4 GB**  |
+| Tốc độ trung bình lúc đang nghe        | 23,3 KB/s                       | **~37 Mbps** |
+
+**Chrome stream thật, không tải nguyên file một lúc.** Nó lấy từng khối ~4 MB, đều
+đặn mỗi **~3 phút 17 giây**, giữ buffer đi trước tiếng đọc. Nên tốc độ nền rất nhẹ —
+37 Mbps cho 200 người là chuyện nhỏ với bất kỳ VPS nào.
+
+### Nút thắt nằm ở 30 giây đầu, không phải lúc đang thi
+
+| Thứ tải lúc mở trang làm bài | Dung lượng                     |
+| ---------------------------------- | -------------------------------- |
+| Buffer mở đầu của file nghe    | **10,0 MB**                |
+| 6 ảnh Part 1                      | 3,5 MB                           |
+| HTML trang làm bài (123 câu)    | 0,5 MB                           |
+| **Cộng**                    | **~14 MB mỗi học viên** |
+
+200 người cùng bấm "Bắt đầu" = **2,7 GB trong vài chục giây**:
+
+| Học viên vào trong | Băng thông cần   |
+| --------------------- | ------------------- |
+| 30 giây              | **~750 Mbps** |
+| 3 phút (chia ca)     | **~125 Mbps** |
+
+> **Con số này biến "chia ca vào phòng lệch 2–3 phút" từ lời khuyên chung thành
+> yêu cầu bắt buộc.** Nó cắt đỉnh băng thông đi 6 lần, không tốn một đồng nào.
+
+### Đính chính ghi chú cũ
+
+Bản đầu của file này (2026-09-23, trước khi đo) viết: *"lifetime 0 → trình duyệt
+không cache → mỗi lần F5 là một lần tải lại"*. **Sai.**
+
+Log cho thấy **9 lần trả `304 Not Modified`** — trình duyệt **có** cache, mỗi khối
+chỉ hỏi lại xem file còn mới không rồi dùng bản đã có, tốn 0 byte. `lifetime 0` chỉ
+thêm một vòng hỏi-đáp cho mỗi khối, không thêm byte nào. **Giữ nguyên** — nó tồn tại
+để `can_listen()` được kiểm lại ngay khi lượt làm nộp xong.
+
+### Đo lại bất cứ lúc nào
+
+```bash
+grep "local_quizportal/listening" /c/wamp64/logs/access.log \
+  | awk '$10 ~ /^[0-9]+$/ {s+=$10; n++} END {printf "%d request, %.2f MB\n", n, s/1048576}'
+```
+
+Trên Linux sau này: `/var/log/nginx/access.log`, nhớ để format log có cột byte
+(`$body_bytes_sent` — mặc định của `combined` đã có).
 
 ### Hai cách giảm tải, cả hai đều rẻ
 
@@ -66,12 +107,12 @@ trong nước = traffic không ra quốc tế.
 
 ### Cấu hình
 
-| | Pilot (20–30 người) | Thi thật 200 người |
-|---|---|---|
-| vCPU | 4 | **8** |
-| RAM | 8 GB | **16 GB** |
-| Đĩa | 100 GB NVMe | **200 GB NVMe** |
-| Băng thông | 200 Mbps | **1 Gbps** (điều chỉnh theo số đo ở mục 1) |
+|              | Pilot (20–30 người) | Thi thật 200 người                                                                                                      |
+| ------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| vCPU         | 4                      | **8**                                                                                                                |
+| RAM          | 8 GB                   | **16 GB**                                                                                                            |
+| Đĩa        | 100 GB NVMe            | **200 GB NVMe**                                                                                                      |
+| Băng thông | 200 Mbps               | **1 Gbps** nếu thả 200 người vào cùng lúc; **300 Mbps** là đủ nếu chia ca lệch 2–3 phút (mục 1) |
 
 **Vì sao 8 vCPU:** đỉnh CPU **không** phải lúc đang thi, mà là lúc 200 người cùng
 bấm "Bắt đầu" — `attempt.php` render 123 câu trong một trang. Nếu mỗi lần render tốn
@@ -89,47 +130,67 @@ công bố giá đúng cấu hình này công khai — phải hỏi trực tiế
 
 ### Môi trường (yêu cầu chính thức của Moodle 4.5)
 
-| | |
-|---|---|
-| PHP | **8.1 – 8.3**, chỉ 64-bit. Ext `sodium` bắt buộc. `max_input_vars ≥ 5000` |
-| CSDL | MariaDB ≥ **10.6.7** · MySQL ≥ **8.0** · PostgreSQL ≥ **13** |
-| Web server | **nginx + PHP-FPM** (khuyến nghị) |
+|            |                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| PHP        | **8.1 – 8.3**, chỉ 64-bit. Ext `sodium` bắt buộc. `max_input_vars ≥ 5000` |
+| CSDL       | MariaDB ≥**10.6.7** · MySQL ≥ **8.0** · PostgreSQL ≥ **13**       |
+| Web server | **nginx + PHP-FPM** (khuyến nghị)                                                |
 
 PHP 8.1.33 đang dùng chuyển sang được luôn. Nguồn:
-<https://moodledev.io/general/releases/4.5>
+[https://moodledev.io/general/releases/4.5](https://moodledev.io/general/releases/4.5)
 
 ---
 
 ## 3. Giai đoạn 0 — GẤP, làm trước cả khi mua server
 
-- [ ] **Push code lên private repo** (GitHub/GitLab).
+- [X] **Push code lên private repo** (GitHub/GitLab).
   Code **chỉ nằm trên máy này** — `origin` là `git.moodle.org`, chỉ đọc. Ổ cứng hỏng
   là mất toàn bộ 11 phiên làm việc. **Đây là rủi ro lớn nhất trong cả file này.**
-- [ ] **Commit 4 mảng đang dang dở** — B3 (bảng lớp), sao lưu/khôi phục, B2 (tạo lớp),
+- [X] **Commit 4 mảng đang dang dở** — B3 (bảng lớp), sao lưu/khôi phục, B2 (tạo lớp),
   B4 (quản lý học viên). `git status` đang có ~25 file untracked.
-- [ ] **Viết script đặt lại 4 thứ không có trong git.**
-  Cài lại site mà quên là cổng học viên không gắn vào site, và tên hiển thị bị ngược:
+- [X] **Script đặt lại 4 thứ không có trong git** — `local/quizportal/cli/site_settings.php`
+  (viết 2026-09-23). Cài lại site mà quên là cổng học viên không gắn vào site, và tên
+  hiển thị bị ngược:
 
-  | Thứ | Ở đâu | Giá trị |
-  |---|---|---|
-  | `$CFG->alternateloginurl` | `config.php:24` | URL cổng học viên |
-  | `fullnamedisplay` | CSDL | `lastname firstname` |
-  | `alternativefullnameformat` | CSDL | `lastname firstname` |
-  | `authloginviaemail` | CSDL | `1` |
+  | Thứ                          | Ở đâu          | Giá trị              |
+  | ----------------------------- | ----------------- | ---------------------- |
+  | `$CFG->alternateloginurl`   | `config.php:24` | URL cổng học viên   |
+  | `fullnamedisplay`           | CSDL              | `lastname firstname` |
+  | `alternativefullnameformat` | CSDL              | `lastname firstname` |
+  | `authloginviaemail`         | CSDL              | `1`                  |
 
-  Lệnh: `php admin/cli/cfg.php --name=<tên> --set="<giá trị>"`
+  Cách dùng:
+
+
+  ```
+  php -d max_input_vars=5000 local/quizportal/cli/site_settings.php            kiểm tra
+  php -d max_input_vars=5000 local/quizportal/cli/site_settings.php --apply    đặt lại
+  ```
+
+  Thoát 0 khi mọi thứ đúng, 1 khi còn việc — dùng được trong script cài đặt.
+
+  **`alternateloginurl` script chỉ báo cáo, không tự sửa.** Nó nằm trong `config.php`
+  nên là *forced setting*: `set_config()` sẽ ghi một dòng vào CSDL mà site đang chạy
+  bỏ qua — tệ hơn là không làm gì. Và `config.php` là file mà một lần sửa hỏng là sập
+  cả site. Script in ra đúng dòng cần dán.
+
+  Script kiểm tra kèm `allowaccountssameemail = 0` — điều kiện để `authloginviaemail`
+  không nhập nhằng. Nó cũng **không** tự tắt cái này: nếu site đã có hai tài khoản
+  trùng email thì tắt đi sẽ chặn họ đăng nhập, phải xem dữ liệu trước.
 
 ---
 
 ## 4. Giai đoạn 1 — Đo và thử, trước khi chốt cấu hình
 
-- [ ] **Đo băng thông thật của file nghe** (DevTools › Network, một lượt trọn vẹn).
-  Xem mục 1. Kết quả đo được: `________ MB / lượt` → × 200 = `________ GB`
+- [X] **Đo băng thông thật của file nghe** — xong 2026-09-23, lượt `#142`.
+  **52,07 MB / lượt nghe · 58,36 MB / cả phiên thi → 11,4 GB cho 200 người.**
+  Kết luận và cách đo lại: mục 1. Điều bất ngờ: tốc độ nền rất nhẹ (~37 Mbps),
+  đỉnh nằm ở 30 giây đầu (~750 Mbps nếu không chia ca).
 - [ ] **Thử Safari + Firefox + iPhone thật.**
   `CLAUDE.md` ghi rõ là chưa từng thử. Chính sách tự phát âm thanh của Safari khác
   Chrome — nếu bị chặn thì **phần nghe hỏng hoàn toàn** với học viên dùng iPhone/Mac.
   Đây là rủi ro kỹ thuật lớn thứ hai sau băng thông.
-- [ ] **Một người nghe trọn 46 phút có tai nghe.**
+- [X] **Một người nghe trọn 46 phút có tai nghe.**
   Cũng chưa ai làm. Lượt thử thật duy nhất (2026-09-22, `hv01`) bị tua, cả bài chỉ
   9 phút.
 - [ ] **Chuyển mp3 sang 64 kbps mono và nghe thử.**
@@ -143,17 +204,79 @@ Vị trí băng = `bây giờ − listenstart`, lưu ở bảng `local_quizporta
 **Server sập 10 phút giữa phần nghe = mọi học viên mất vĩnh viễn 10 phút băng**,
 không lấy lại được, và bài thi coi như hỏng.
 
-Công cụ hiện có: `cli/listening_clock.php --to=MM:SS` kéo băng lùi lại — nhưng chạy
-**từng học viên một**. Với 200 người thì không kịp trong lúc đang có sự cố.
-
-- [ ] **Vá lỗ hổng này trước khi public** (ước lượng: nửa buổi).
-  Thêm lệnh "lùi băng cho cả lớp N phút" hoặc "tạm dừng toàn lớp" cho admin, dựa
-  trên `attempt_state::set_listening_position()` đã có.
-- [ ] **Viết quy trình khẩn cấp** và in ra để sẵn trong phòng thi: server sập thì ai
-  làm gì, theo thứ tự nào.
+- [X] **Vá lỗ hổng này** — `local/quizportal/cli/exam_recovery.php` (viết 2026-09-23,
+  test 37/37). Trả lại thời gian cho **cả phòng** trong một lệnh.
+- [X] **Viết quy trình khẩn cấp** — bên dưới. In ra dán trong phòng máy.
 
 > Đây là khác biệt giữa "sự cố nhỏ, lùi băng 10 phút, thi tiếp" và "phải tổ chức
 > thi lại cho cả 200 người".
+
+### Sự cố gây ra **ba** thiệt hại, không phải một
+
+Điều này chỉ lộ ra khi đọc kỹ code — ghi lại để khỏi sửa nửa vời:
+
+| Thiệt hại | Cơ chế |
+| --- | --- |
+| Băng chạy tiếp lúc server chết | vị trí = `bây giờ − listenstart` |
+| **Đồng hồ quiz cũng mất từng ấy phút** | `end_time = timestart + timelimit` (`quizaccess_timelimit`) |
+| **Ai bấm F5 sau khi server sống lại bị đẩy sang trang chuyển tiếp VĨNH VIỄN** | `attempt_state::section()` tự đóng phần nghe khi `bây giờ > listenstart + độ dài + 90s` |
+
+Cái thứ ba là độc nhất: nó **trừng phạt đúng những người mất nhiều nhất** (ai đang ở
+gần cuối băng), và `set_listening_position()` từ chối làm việc sau khi `listenend` đã
+được ghi. Nên công cụ cứu hộ phải **kéo lại được** phần nghe đã bị đóng.
+
+### Công cụ
+
+```
+exam_recovery.php --list                           đề nào đang có người thi
+exam_recovery.php --quiz=17                         ai đang ở đâu (chỉ đọc)
+exam_recovery.php --quiz=17 --give-back=12          xem trước, KHÔNG ghi
+exam_recovery.php --quiz=17 --give-back=12 --apply  thật sự trả lại 12 phút
+```
+
+Cờ thêm: `--reopen` kéo lại những lượt bị tự đẩy sang trang chuyển tiếp ·
+`--no-quiztime` chỉ lùi băng, không cộng đồng hồ quiz.
+
+**Nó dời mọi đồng hồ đi CÙNG một lượng**, không đặt tất cả về một mốc. Ai đang ở
+40:00 quay về 28:00, ai ở 05:00 quay về 00:00 — mỗi người nghe tiếp đúng chỗ mất
+điện, không ai nghe lại đoạn mà người bên cạnh chỉ được nghe một lần.
+
+**Không có nút "tạm dừng", và không cần.** Ghi lại giờ sự cố rồi trả lại đúng ngần
+ấy phút sau khi hồi phục là **cùng một phép toán** — mà không phải thêm cột CSDL nào.
+
+### ⚠️ Quy trình khẩn cấp — IN RA DÁN TRONG PHÒNG MÁY
+
+**Lúc phát hiện sự cố**
+
+1. **Ghi giờ ngay.** `__:__:__` ← quan trọng nhất. Không có nó thì không biết trả lại bao nhiêu.
+2. Nói học viên **đừng tắt trình duyệt, đừng bấm gì cả**, ngồi yên chờ.
+3. Ghi giờ server sống lại: `__:__:__`
+
+**Sau khi server sống lại — LÀM TRƯỚC KHI CHO HỌC VIÊN BẤM F5**
+
+4. Tính số phút mất: `______ phút`
+5. Xem ai đang ở đâu:
+   `php local/quizportal/cli/exam_recovery.php --quiz=<ID>`
+6. Xem trước (chưa ghi gì):
+   `php ... exam_recovery.php --quiz=<ID> --give-back=<PHÚT>`
+7. Đọc kỹ bảng. Có ai ở **"Trang chuyển tiếp"** không?
+   - Có, và họ bị đẩy sang đó **vì sự cố** → thêm `--reopen`
+   - Có, nhưng họ **nghe hết băng thật** rồi → **đừng** dùng `--reopen`
+   - Nếu báo "quá hết băng" mà bạn chắc là do sự cố → sự cố dài hơn bạn tưởng, tính lại bước 4
+8. Ghi thật: thêm `--apply`
+9. **Bây giờ** mới bảo học viên bấm F5.
+10. Dán dòng tổng kết script in ra vào biên bản sự cố.
+
+> **Càng chờ lâu càng khó cứu.** Mỗi phút trôi qua là thêm học viên bị `section()`
+> đẩy sang trang chuyển tiếp, và ai đã bấm "Bắt đầu phần đọc" thì `--reopen` cũng
+> không kéo lại được — họ đã thấy đề đọc rồi.
+
+### Còn mở
+
+- [ ] Công cụ chỉ có ở CLI (cần SSH). Trong phòng thi người trực thường là giáo viên,
+  không phải quản trị hệ thống. Cân nhắc làm trang web cho admin — nhưng việc này nằm
+  trong nhóm "mọi thứ về giáo viên, để sau".
+- [ ] Chưa ghi vào log sự kiện của Moodle. Hiện chỉ in ra một dòng để dán vào biên bản.
 
 ---
 
@@ -162,7 +285,7 @@ Công cụ hiện có: `cli/listening_clock.php --to=MM:SS` kéo băng lùi lạ
 - [ ] VPS Linux (Ubuntu 24.04) + nginx + PHP-FPM 8.3 + MariaDB 10.11
 - [ ] Tên miền + **HTTPS** (Let's Encrypt), `$CFG->wwwroot` dùng `https://`
   — không có HTTPS thì mật khẩu bay trần trên mạng
-- [ ] `moodledata` đặt **ngoài** web root, quyền đúng
+- [ ] `moodledata` đặt **ngoài** web root,i quyền đúng
 - [ ] **Cron mỗi phút** (`admin/cli/cron.php` qua systemd timer)
   — thiếu là: không gửi email, không dọn thùng rác, không backup tự động
 - [ ] **SMTP thật** — tạo tài khoản, đặt lại mật khẩu, thông báo đều cần email
@@ -242,6 +365,6 @@ Cả ba đều miễn phí, và cả ba đều có thể làm thay đổi kế h
 
 ## Nguồn
 
-- Yêu cầu Moodle 4.5: <https://moodledev.io/general/releases/4.5>
-- Giá VPS Việt Nam 2026: <https://azdigi.com/blog/kien-thuc-vps/bang-gia-thue-vps-viet-nam>
-  · <https://fptcloud.com/bang-gia-thue-vps/> · <https://cloud.vnpt.vn/blog/bang-gia-thue-vps-308>
+- Yêu cầu Moodle 4.5: [https://moodledev.io/general/releases/4.5](https://moodledev.io/general/releases/4.5)
+- Giá VPS Việt Nam 2026: [https://azdigi.com/blog/kien-thuc-vps/bang-gia-thue-vps-viet-nam](https://azdigi.com/blog/kien-thuc-vps/bang-gia-thue-vps-viet-nam)
+  · [https://fptcloud.com/bang-gia-thue-vps/](https://fptcloud.com/bang-gia-thue-vps/) · [https://cloud.vnpt.vn/blog/bang-gia-thue-vps-308](https://cloud.vnpt.vn/blog/bang-gia-thue-vps-308)

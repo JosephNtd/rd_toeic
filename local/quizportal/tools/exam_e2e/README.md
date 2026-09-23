@@ -1,6 +1,9 @@
 # Test trang làm bài, trang kết quả, bảng lớp, sao lưu đề, tạo lớp và quản lý học viên
 
-Mười một bước, chạy nối tiếp trên một khoá học thử riêng (lần chạy sạch gần nhất: 312/312).
+Mười hai bước, chạy nối tiếp trên một khoá học thử riêng. Lần chạy sạch gần nhất của
+11 bước cũ: 312/312. Bước `5e` (mới 2026-09-23) đã chạy sạch **39/39 riêng**, hai lần
+liên tiếp, và `class_check.php` vẫn chạy được ngay sau nó — nhưng **chưa ai chạy trọn
+cả 12 bước một lượt** kể từ khi thêm nó. Trọn bộ nay là 351.
 `teardown` xoá mọi khoá `qptest` / `qptest_*` và mọi tài khoản `qp_*` (kể cả tài
 khoản mà bước tạo lớp tạo ra, tên đăng nhập là email `qp_...@example.invalid`):
 
@@ -14,6 +17,7 @@ khoản mà bước tạo lớp tạo ra, tên đăng nhập là email `qp_...@e
 | 5b | `backup_check.php` | Sao lưu/khôi phục đề (CLI), cả 3 đường core chép một quiz: **Duplicate**, **xoá rồi lấy lại từ thùng rác khoá học**, **sao lưu cả khoá có học viên → khôi phục thành khoá mới**. Mỗi đường: đủ 242 dòng `slotmeta`, đúng câu hỏi, cùng file nghe (so mã băm), và **chạy được** theo đúng phép kiểm của trang làm bài; trạng thái phần nghe đi theo lượt làm. Tự dọn khoá khôi phục + bản sao trong thùng rác | 20 |
 | 5c | `newclass_check.php` | Trình tạo lớp (CLI): đọc danh sách dán vào (tab/phẩy/chấm phẩy, dòng tiêu đề, Unicode tách dấu, "Hà" + dấu cách không ngắt, 9 kiểu dòng sai kèm số dòng), tạo lớp thật (2 tài khoản mới + 1 cũ, giáo viên, đề kèm lịch mở/đóng + sự kiện lịch), đăng nhập bằng email + ngày sinh, lớp hỏng giữa chừng không để lại gì | 30 |
 | 5d | `students_check.php` | Quản lý học viên (CLI): trường hồ sơ "Ngày sinh" (khoá, chỉ học viên + admin thấy), lớp mới lưu ngày sinh; **thêm học viên** vào lớp có sẵn (mới / đã có tài khoản / đã trong lớp), danh sách hỏng giữa chừng không để lại tài khoản nào; **đặt lại mật khẩu** về ngày sinh đang lưu hoặc ngày gõ vào (và lưu lại), xoá bộ đếm đăng nhập sai, từ chối admin / người ngoài lớp / tài khoản không dùng mật khẩu; **chuyển lớp**: ghi danh lớp cũ bị đình chỉ chứ không xoá, lượt làm còn nguyên, dashboard và bảng lớp đổi theo, chuyển ngược thì bật lại đúng ghi danh cũ; dashboard ghi tên lớp trên thẻ khi học 2 lớp. Tự trả `qp_hv2`, `qp_hv4` về như cũ | 40 |
+| 5e | `recovery_check.php` | Cứu hộ sau sự cố server (CLI), chạy chính `cli/exam_recovery.php` như một tiến trình riêng: 6 lượt ở 6 trạng thái (đang nghe · bị tự đóng trong lúc sự cố · bị đóng quá xa · đã sang phần đọc · chưa mở trang · chưa bấm phát). Xem trước không ghi gì; `--apply` lùi băng đúng số giây và cộng đồng hồ quiz cho **mọi** lượt; thiếu `--reopen` thì không đụng lượt đã đóng; có `--reopen` thì kéo lại đúng lượt còn cứu được và **từ chối** lượt đã sang phần đọc; `--no-quiztime` chỉ lùi băng. 6 đường lỗi. Tự xoá 6 lượt của mình khi xong | 39 |
 | 6 | `class_test.js` | Trang `classboard.php` trong Chrome: link trong menu "Xem thêm" của khoá, từng trạng thái, dòng "Cả lớp", sắp xếp 3 cột (chưa làm luôn ở cuối), bấm điểm mở đúng lượt cao nhất, chọn nhóm, tải Excel, 390px, học viên bị từ chối, trang "Các lớp luyện TOEIC" (admin) | 22 |
 | 7 | `newclass_test.js` | Trang `newclass.php` trong Chrome: dòng sai báo đúng số dòng, "Kiểm tra trước" không tạo gì và giữ nguyên form, "Tạo lớp" → trang kết quả có danh sách tài khoản để in, tải lại không tạo lần hai, bảng lớp tên "Họ Tên", học viên mới đăng nhập bằng email + ngày sinh thấy đề, học viên cũ đăng nhập bằng email + mật khẩu cũ và thấy **tên lớp trên từng thẻ đề**, sai ngày sinh bị từ chối | 14 |
 | 8 | `students_test.js` | Trang `students.php` trong Chrome: 3 lối vào (danh sách lớp, menu khoá học, "Các lớp luyện TOEIC"), danh sách không có giáo viên, thêm học viên (dòng sai, xem trước, thêm, bảng tài khoản để in, tải lại không thêm lần hai), đặt lại mật khẩu cho tài khoản chưa có ngày sinh rồi đăng nhập bằng mật khẩu mới, huỷ, chuyển lớp sang lớp thử thứ hai (`fixture.php second-class`) và thêm lại ("quay lại lớp"), dashboard của học viên 2 lớp ghi tên lớp trên từng thẻ (cả ở 390px), học viên 1 lớp thì không, không tràn ngang ở 390px | 30 |
@@ -51,6 +55,7 @@ $PHP $E/class_check.php                    # -> ... course 9 group 3 an 30
 $PHP $E/backup_check.php
 $PHP $E/newclass_check.php
 $PHP $E/students_check.php
+$PHP $E/recovery_check.php                 # tự dọn, chạy chỗ nào trong chuỗi cũng được
 (cd $E && ATTEMPT=29 node result_test.js)
 (cd $E && ATTEMPT=29 node scale_test.js)
 (cd $E && COURSE=9 GROUP=3 AN=30 node class_test.js)
