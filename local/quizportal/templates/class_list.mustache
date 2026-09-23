@@ -1,0 +1,66 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/class_list
+
+    Every course holding a TOEIC paper, in site administration (classlist.php).
+    Admin layout: Bootstrap does most of the work.
+
+    Context variables required for this template:
+    * hasrows, importurl
+    * rows - [{name, shortname, hidden, boardurl, courseurl, studentsurl (null unless allowed), papers, students, finished, lastfinish}]
+
+    Example context (json):
+    {
+        "hasrows": true, "importurl": "#",
+        "rows": [{"name": "Lớp TOEIC K09", "shortname": "K09", "hidden": false, "boardurl": "#", "courseurl": "#", "studentsurl": "#",
+                  "papers": 2, "students": 12, "finished": 17, "lastfinish": "22/09/2026 16:14"}]
+    }
+}}
+<div class="quizportal-classlist">
+    <h2>Các lớp luyện TOEIC</h2>
+    <p>Mọi khoá học có ít nhất một đề nhập bằng trình nhập đề TOEIC. Bấm tên lớp để mở bảng điều khiển của lớp đó.</p>
+
+    {{^hasrows}}
+        <div class="alert alert-info">
+            Chưa khoá nào có đề TOEIC. <a href="{{importurl}}">Nhập đề TOEIC</a> vào một khoá học để bắt đầu.
+        </div>
+    {{/hasrows}}
+
+    {{#hasrows}}
+        <div class="table-responsive">
+        <table class="table quizportal-classlist__table">
+            <thead>
+                <tr>
+                    <th scope="col">Lớp</th>
+                    <th scope="col" class="text-right">Học viên</th>
+                    <th scope="col" class="text-right">Đề TOEIC</th>
+                    <th scope="col" class="text-right">Lượt đã nộp</th>
+                    <th scope="col">Nộp gần nhất</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                    <tr>
+                        <th scope="row">
+                            <a href="{{boardurl}}">{{name}}</a>
+                            {{#hidden}}<span class="badge badge-secondary">Đang ẩn</span>{{/hidden}}
+                            <span class="quizportal-classlist__short"><a href="{{courseurl}}">{{shortname}}</a>{{#studentsurl}} · <a href="{{studentsurl}}">Quản lý học viên</a>{{/studentsurl}}</span>
+                        </th>
+                        <td class="text-right">{{students}}</td>
+                        <td class="text-right">{{papers}}</td>
+                        <td class="text-right">{{finished}}</td>
+                        <td>{{#lastfinish}}{{lastfinish}}{{/lastfinish}}{{^lastfinish}}—{{/lastfinish}}</td>
+                    </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+        </div>
+    {{/hasrows}}
+</div>

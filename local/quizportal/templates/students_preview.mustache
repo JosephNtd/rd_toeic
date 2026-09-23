@@ -1,0 +1,75 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/students_preview
+
+    "Kiểm tra trước" in the add-students box of students.php: what "Thêm vào
+    lớp" would do to each line. Nothing has been done yet.
+
+    Context variables required for this template:
+    * classname
+    * newcount, enrolcount, returncount, alreadycount, nothingtodo
+    * lines - [{line, fullname, email, password, isnew, isenrol, isreturn, isalready, username, otherclasses}]
+      otherclasses: the other classes an existing account is in, as one string, or null
+
+    Example context (json):
+    {
+        "classname": "TOEIC 650+ K10", "newcount": 1, "enrolcount": 1, "returncount": 0, "alreadycount": 1,
+        "nothingtodo": false,
+        "lines": [
+            {"line": 1, "fullname": "Nguyễn Văn An", "email": "an@gmail.com", "password": "19102004",
+             "isnew": true, "username": "an@gmail.com", "otherclasses": null},
+            {"line": 2, "fullname": "Trần Bình", "email": "binh@gmail.com", "password": null,
+             "isenrol": true, "username": "hv02", "otherclasses": "K09"},
+            {"line": 3, "fullname": "Lê Chi", "email": "chi@gmail.com", "password": null,
+             "isalready": true, "username": "chi@gmail.com", "otherclasses": null}
+        ]
+    }
+}}
+<div class="quizportal-newclass__preview" data-region="students-preview">
+    <div class="alert alert-info">
+        <strong>Chưa thêm gì cả.</strong>
+        {{^nothingtodo}}Kiểm tra bảng dưới, ổn thì bấm <strong>Thêm vào lớp</strong>.{{/nothingtodo}}
+        {{#nothingtodo}}Mọi người trong danh sách đã ở lớp {{classname}} — không có ai để thêm.{{/nothingtodo}}
+    </div>
+    <ul>
+        <li><strong>{{newcount}}</strong> tài khoản mới</li>
+        <li><strong>{{enrolcount}}</strong> tài khoản đã có, ghi danh vào lớp</li>
+        {{#returncount}}<li><strong>{{returncount}}</strong> học viên quay lại lớp (trước đây đã chuyển đi) — bài đã làm vẫn còn</li>{{/returncount}}
+        {{#alreadycount}}<li><strong>{{alreadycount}}</strong> đã ở trong lớp — bỏ qua</li>{{/alreadycount}}
+    </ul>
+    <table class="table table-sm quizportal-newclass__table">
+        <thead>
+            <tr>
+                <th scope="col">Dòng</th>
+                <th scope="col">Họ và tên</th>
+                <th scope="col">Tên đăng nhập</th>
+                <th scope="col">Mật khẩu</th>
+                <th scope="col">Sẽ làm gì</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#lines}}
+                <tr{{#isalready}} class="text-muted"{{/isalready}}>
+                    <td>{{line}}</td>
+                    <td>{{fullname}}</td>
+                    <td>{{email}}</td>
+                    <td>{{#isnew}}<code>{{password}}</code>{{/isnew}}{{^isnew}}<span class="text-muted">giữ mật khẩu cũ</span>{{/isnew}}</td>
+                    <td>
+                        {{#isnew}}Tạo mới{{/isnew}}
+                        {{#isenrol}}Đã có ({{username}}) — ghi danh{{/isenrol}}
+                        {{#isreturn}}Quay lại lớp ({{username}}) — ghi danh lại{{/isreturn}}
+                        {{#isalready}}Đã ở trong lớp — bỏ qua{{/isalready}}
+                        {{#otherclasses}}<span class="quizportal-students__other">đang ở lớp: {{otherclasses}}</span>{{/otherclasses}}
+                    </td>
+                </tr>
+            {{/lines}}
+        </tbody>
+    </table>
+</div>

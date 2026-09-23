@@ -1,0 +1,181 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/class_board
+
+    The class board (classboard.php). Built by local_quizportal\output\class_board;
+    local_quizportal/classboard makes the column headings sort the rows.
+    Without JavaScript the headings are plain text and the rows stay in name order.
+
+    Ink and accent only: the board says nothing is right or wrong, so
+    --correct and --wrong stay out of it. States differ in words and in shape
+    (solid, dashed, tinted), never by colour alone.
+
+    Context variables required for this template:
+    * coursename, studentcount, papercount
+    * groupmenu - core's group selector (HTML), '' without groups
+    * haspapers, hasstudents, hasgrid, importurl, downloadurl
+    * papers - [{index, name, hidden, viewurl}]
+    * rows - [{fullname, sortname - given name first, what the name column sorts by,
+               profileurl, weaksort, weakest: {part, name, percent} | null,
+               cells: [{isfinished, isinprogress, isabandoned, isnone, sortvalue,
+                        score, listening, reading, attemptslabel, alsoinprogress, reviewurl, label}]}]
+    * summary - one per paper: [{done, total, average, hasaverage}]
+    * classweakest - {part, name, percent} | null
+    * parts - [{part, name, percent, islistening, isweakest}]
+
+    Example context (json):
+    {
+        "coursename": "Lớp TOEIC K09", "studentcount": 1, "papercount": 1, "groupmenu": "",
+        "haspapers": true, "hasstudents": true, "hasgrid": true, "importurl": null, "downloadurl": "#",
+        "papers": [{"index": 0, "name": "Đề 01", "hidden": false, "viewurl": "#"}],
+        "rows": [{"fullname": "Nguyễn Văn An", "sortname": "An Nguyễn Văn", "profileurl": "#", "weaksort": 48,
+                  "weakest": {"part": 7, "name": "Đọc hiểu", "percent": 48},
+                  "cells": [{"isfinished": true, "sortvalue": 700, "score": 700, "listening": 390, "reading": 310,
+                             "attemptslabel": "2 lượt", "alsoinprogress": false, "reviewurl": "#", "label": "…"}]}],
+        "summary": [{"done": 1, "total": 1, "average": 700, "hasaverage": true}],
+        "classweakest": {"part": 7, "name": "Đọc hiểu", "percent": 48},
+        "parts": [{"part": 7, "name": "Đọc hiểu", "percent": 48, "islistening": false, "isweakest": true}]
+    }
+}}
+<div class="quizportal-board" id="quizportal-board">
+
+    <header class="quizportal-board__head">
+        <div>
+            <p class="quizportal-board__eyebrow">Bảng điều khiển lớp</p>
+            <h2 class="quizportal-board__title">{{coursename}}</h2>
+            <p class="quizportal-board__facts">{{studentcount}} học viên · {{papercount}} đề TOEIC</p>
+        </div>
+        <div class="quizportal-board__actions">
+            {{{groupmenu}}}
+            {{#hasgrid}}
+                <a class="btn btn-secondary" href="{{downloadurl}}">Tải Excel</a>
+            {{/hasgrid}}
+        </div>
+    </header>
+
+    {{^haspapers}}
+        <div class="quizportal-board__empty">
+            <p><strong>Khoá này chưa có đề TOEIC nào.</strong></p>
+            <p>Bảng chỉ tính các đề nhập bằng trình nhập đề TOEIC; quiz thường xem ở Sổ điểm của Moodle.</p>
+            {{#importurl}}<p><a href="{{importurl}}">Nhập đề TOEIC</a></p>{{/importurl}}
+        </div>
+    {{/haspapers}}
+
+    {{#haspapers}}
+    {{^hasstudents}}
+        <div class="quizportal-board__empty">
+            <p><strong>Chưa có học viên nào để hiện.</strong></p>
+            <p>Bảng chỉ tính tài khoản đang ghi danh với vai trò học viên{{#groupmenu}}, trong nhóm đang chọn{{/groupmenu}}.</p>
+        </div>
+    {{/hasstudents}}
+    {{/haspapers}}
+
+    {{#hasgrid}}
+        <p class="quizportal-board__note">
+            Mỗi ô là <strong>lượt cao nhất</strong> của học viên ở đề đó, bấm vào để xem bài làm.
+            Part yếu nhất tính trên các lượt cao nhất ấy. Bấm tiêu đề cột để sắp xếp.
+        </p>
+
+        <div class="quizportal-board__scroll" role="region" aria-labelledby="quizportal-board-caption" tabindex="0">
+            <table class="quizportal-board__grid" data-region="grid">
+                <caption id="quizportal-board-caption" class="sr-only">Điểm TOEIC cao nhất của từng học viên ở từng đề</caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="quizportal-board__name" aria-sort="ascending">
+                            <button type="button" class="quizportal-board__sort" data-sort="text" data-first="ascending">Học viên</button>
+                        </th>
+                        {{#papers}}
+                            <th scope="col">
+                                <button type="button" class="quizportal-board__sort" data-sort="number" data-first="descending">{{name}}</button>
+                                {{#hidden}}<span class="quizportal-board__tag">Đang ẩn</span>{{/hidden}}
+                            </th>
+                        {{/papers}}
+                        <th scope="col">
+                            <button type="button" class="quizportal-board__sort" data-sort="number" data-first="ascending">Part yếu nhất</button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                        <tr>
+                            <th scope="row" class="quizportal-board__name" data-value="{{sortname}}">
+                                <a href="{{profileurl}}">{{fullname}}</a>
+                            </th>
+                            {{#cells}}
+                                <td data-value="{{sortvalue}}">
+                                    {{#isfinished}}
+                                        <a class="quizportal-board__score" href="{{reviewurl}}" aria-label="{{label}}">{{score}}</a>
+                                        <span class="quizportal-board__split">Nghe {{listening}} · Đọc {{reading}}</span>
+                                        <span class="quizportal-board__meta">{{attemptslabel}}{{#alsoinprogress}} · đang làm lượt mới{{/alsoinprogress}}</span>
+                                    {{/isfinished}}
+                                    {{#isinprogress}}<span class="quizportal-board__state is-inprogress">Đang làm</span>{{/isinprogress}}
+                                    {{#isabandoned}}<span class="quizportal-board__state is-abandoned">Bỏ dở</span>{{/isabandoned}}
+                                    {{#isnone}}<span class="quizportal-board__state is-none">Chưa làm</span>{{/isnone}}
+                                </td>
+                            {{/cells}}
+                            <td data-value="{{weaksort}}">
+                                {{#weakest}}
+                                    <span class="quizportal-board__weak"><strong>Part {{part}}</strong> · {{percent}}%</span>
+                                    <span class="quizportal-board__meta">{{name}}</span>
+                                {{/weakest}}
+                                {{^weakest}}<span class="quizportal-board__meta">—</span>{{/weakest}}
+                            </td>
+                        </tr>
+                    {{/rows}}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th scope="row" class="quizportal-board__name">Cả lớp</th>
+                        {{#summary}}
+                            <td>
+                                {{#hasaverage}}
+                                    <span class="quizportal-board__score is-average">{{average}}</span>
+                                    <span class="quizportal-board__split">điểm trung bình</span>
+                                {{/hasaverage}}
+                                <span class="quizportal-board__meta">{{done}}/{{total}} đã làm</span>
+                            </td>
+                        {{/summary}}
+                        <td>
+                            {{#classweakest}}
+                                <span class="quizportal-board__weak"><strong>Part {{part}}</strong> · {{percent}}%</span>
+                                <span class="quizportal-board__meta">{{name}}</span>
+                            {{/classweakest}}
+                            {{^classweakest}}<span class="quizportal-board__meta">—</span>{{/classweakest}}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {{#classweakest}}
+            <section class="quizportal-board__parts" aria-labelledby="quizportal-board-parts">
+                <h3 id="quizportal-board-parts">Cả lớp theo từng Part</h3>
+                <p class="quizportal-board__note">Tỉ lệ câu đúng, gộp lượt cao nhất của mọi học viên ở mọi đề.</p>
+                <table class="quizportal-result__parts-table">
+                    <thead>
+                        <tr><th scope="col">Part</th><th scope="col">Dạng bài</th><th scope="col"><span class="sr-only">Tỉ lệ đúng</span></th></tr>
+                    </thead>
+                    <tbody>
+                        {{#parts}}
+                            <tr class="{{#islistening}}is-listening{{/islistening}}{{^islistening}}is-reading{{/islistening}}">
+                                <td>{{part}}</td>
+                                <td>{{name}}{{#isweakest}} <span class="quizportal-board__tag is-weakest">Yếu nhất</span>{{/isweakest}}</td>
+                                <td class="quizportal-result__bar-cell">
+                                    <span class="quizportal-result__bar" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
+                                    <span class="quizportal-result__pct">{{percent}}%</span>
+                                </td>
+                            </tr>
+                        {{/parts}}
+                    </tbody>
+                </table>
+            </section>
+        {{/classweakest}}
+    {{/hasgrid}}
+</div>

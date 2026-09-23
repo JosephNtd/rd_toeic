@@ -1,0 +1,39 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/students_added
+
+    students.php?added=1: what "Thêm vào lớp" did, and the account list of
+    those added, to print and hand out (account_sheet).
+
+    Context variables required for this template:
+    * fullname - the class, loginurl
+    * newcount, enrolcount, returncount, alreadycount
+    * hasaccounts, accounts - see account_sheet
+
+    Example context (json):
+    {
+        "fullname": "TOEIC 650+ K10", "loginurl": "#",
+        "newcount": 1, "enrolcount": 0, "returncount": 0, "alreadycount": 1,
+        "hasaccounts": true,
+        "accounts": [{"email": "an@gmail.com", "fullname": "Nguyễn Văn An", "password": "19102004", "isnew": true, "suspended": false}]
+    }
+}}
+<div class="quizportal-students__added" data-region="students-added">
+    <div class="alert alert-success d-print-none">
+        Đã thêm vào lớp <strong>{{fullname}}</strong>: {{newcount}} tài khoản mới, {{enrolcount}} tài khoản đã có được ghi danh{{#returncount}}, {{returncount}} học viên quay lại lớp{{/returncount}}.
+        {{#alreadycount}}{{alreadycount}} người đã ở trong lớp từ trước — không đổi gì.{{/alreadycount}}
+    </div>
+    {{#hasaccounts}}
+        <div class="mb-3 d-print-none">
+            <button type="button" class="btn btn-secondary" onclick="window.print()">In danh sách tài khoản</button>
+        </div>
+        {{> local_quizportal/account_sheet }}
+    {{/hasaccounts}}
+</div>

@@ -1,0 +1,52 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/newclass_report
+
+    newclass.php once the class is made. The account table is laid out to be
+    printed and handed out (account_sheet); printing hides the rest of the page.
+
+    Context variables required for this template:
+    * fullname, courseurl, boardurl, studentsurl, againurl, loginurl
+    * hasaccounts, newcount, existingcount
+    * accounts - [{email, username, fullname, password, isnew, suspended}]
+    * teachers - string[]
+    * papers - [{name, schedule}]
+
+    Example context (json):
+    {
+        "fullname": "TOEIC 650+ K10", "courseurl": "#", "boardurl": "#", "studentsurl": "#", "againurl": "#", "loginurl": "#",
+        "hasaccounts": true, "newcount": 1, "existingcount": 0,
+        "accounts": [{"email": "an@gmail.com", "username": "an@gmail.com", "fullname": "Nguyễn Văn An",
+                      "password": "19102004", "isnew": true, "suspended": false}],
+        "teachers": ["Lê Thị Hoa"], "papers": [{"name": "Đề 01", "schedule": "mở ngay · không hạn đóng"}]
+    }
+}}
+<div class="quizportal-newclass__report" data-region="newclass-report">
+    <div class="alert alert-success d-print-none">
+        Đã tạo lớp <strong>{{fullname}}</strong>: {{newcount}} tài khoản mới, {{existingcount}} tài khoản đã có được ghi danh.
+    </div>
+
+    <div class="quizportal-import__actions mb-3 d-print-none">
+        <a class="btn btn-primary" href="{{boardurl}}">Bảng điều khiển lớp</a>
+        <a class="btn btn-secondary" href="{{studentsurl}}">Quản lý học viên</a>
+        <a class="btn btn-secondary" href="{{courseurl}}">Mở khoá học</a>
+        {{#hasaccounts}}<button type="button" class="btn btn-secondary" onclick="window.print()">In danh sách tài khoản</button>{{/hasaccounts}}
+        <a class="btn btn-link" href="{{againurl}}">Tạo lớp khác</a>
+    </div>
+
+    <div class="d-print-none">
+        <p class="mb-1">Giáo viên: {{#teachers}}{{.}}; {{/teachers}}{{^teachers}}chưa có — thêm ở trang thành viên của khoá học.{{/teachers}}</p>
+        <p>Đề: {{#papers}}{{name}} ({{schedule}}); {{/papers}}{{^papers}}chưa có đề — nhập hoặc chép đề sau.{{/papers}}</p>
+    </div>
+
+    {{#hasaccounts}}
+        {{> local_quizportal/account_sheet }}
+    {{/hasaccounts}}
+</div>

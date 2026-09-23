@@ -70,4 +70,18 @@ class renderer extends plugin_renderer_base {
         }
         return $this->render_from_template('local_quizportal/result_page', $data);
     }
+
+    /**
+     * Render the class board of one course.
+     *
+     * @param class_board $board
+     * @return string
+     */
+    public function render_class_board(class_board $board): string {
+        $data = $board->export_for_template($this);
+        if ($data->hasgrid) {
+            $this->page->requires->js_call_amd('local_quizportal/classboard', 'init', ['#quizportal-board [data-region="grid"]']);
+        }
+        return $this->render_from_template('local_quizportal/class_board', $data);
+    }
 }

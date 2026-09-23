@@ -1,0 +1,70 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/newclass_preview
+
+    "Kiểm tra trước" on newclass.php: what "Tạo lớp" would make. Nothing has
+    been made yet. Admin layout: Bootstrap does most of the work.
+
+    Context variables required for this template:
+    * fullname, shortname, visible
+    * hasstudents, newcount, existingcount
+    * students - [{line, email, fullname, password, isnew, username}]
+    * teachers - string[]
+    * papers - [{name, schedule}]
+
+    Example context (json):
+    {
+        "fullname": "TOEIC 650+ K10", "shortname": "K10", "visible": true,
+        "hasstudents": true, "newcount": 1, "existingcount": 1,
+        "students": [
+            {"line": 1, "email": "an@gmail.com", "fullname": "Nguyễn Văn An", "password": "19102004", "isnew": true, "username": "an@gmail.com"},
+            {"line": 2, "email": "binh@gmail.com", "fullname": "Trần Bình", "password": null, "isnew": false, "username": "hv02"}
+        ],
+        "teachers": ["Lê Thị Hoa"], "papers": [{"name": "Đề 01", "schedule": "mở ngay · không hạn đóng"}]
+    }
+}}
+<div class="quizportal-newclass__preview" data-region="newclass-preview">
+    <div class="alert alert-info">
+        <strong>Chưa tạo gì cả.</strong> Kiểm tra bảng dưới, ổn thì bấm <strong>Tạo lớp</strong> ở cuối trang.
+    </div>
+
+    <h3 class="h5">Lớp {{fullname}} <span class="text-muted">({{shortname}})</span></h3>
+    <ul>
+        <li>{{#visible}}Mở cho học viên ngay{{/visible}}{{^visible}}Tạo ở trạng thái ẩn{{/visible}}</li>
+        <li>Giáo viên: {{#teachers}}{{.}}; {{/teachers}}{{^teachers}}chưa chọn{{/teachers}}</li>
+        <li>Đề: {{#papers}}{{name}} ({{schedule}}); {{/papers}}{{^papers}}chưa chọn đề nào{{/papers}}</li>
+        <li>Học viên: <strong>{{newcount}}</strong> tài khoản mới, <strong>{{existingcount}}</strong> tài khoản đã có</li>
+    </ul>
+
+    {{#hasstudents}}
+        <table class="table table-sm quizportal-newclass__table">
+            <thead>
+                <tr>
+                    <th scope="col">Dòng</th>
+                    <th scope="col">Họ và tên</th>
+                    <th scope="col">Tên đăng nhập</th>
+                    <th scope="col">Mật khẩu</th>
+                    <th scope="col">Tài khoản</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#students}}
+                    <tr>
+                        <td>{{line}}</td>
+                        <td>{{fullname}}</td>
+                        <td>{{email}}</td>
+                        <td>{{#isnew}}<code>{{password}}</code>{{/isnew}}{{^isnew}}<span class="text-muted">giữ mật khẩu cũ</span>{{/isnew}}</td>
+                        <td>{{#isnew}}Tạo mới{{/isnew}}{{^isnew}}Đã có ({{username}}) — chỉ ghi danh{{/isnew}}</td>
+                    </tr>
+                {{/students}}
+            </tbody>
+        </table>
+    {{/hasstudents}}
+</div>

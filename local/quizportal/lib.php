@@ -16,9 +16,45 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use local_quizportal\local\class_report;
 use local_quizportal\local\import\importer;
 use local_quizportal\local\listening;
 use mod_quiz\quiz_settings;
+
+/**
+ * Put the class board in the course's "More" menu, for those who may see it,
+ * in courses that hold a TOEIC paper.
+ *
+ * @param navigation_node $navigation the course administration node
+ * @param stdClass $course
+ * @param context $context the course context
+ */
+function local_quizportal_extend_navigation_course(navigation_node $navigation, stdClass $course, context $context): void {
+    if (has_capability('local/quizportal:viewclassboard', $context)
+            && class_report::course_has_papers((int) $course->id)) {
+        $navigation->add(
+            'Bảng điều khiển lớp',
+            new moodle_url('/local/quizportal/classboard.php', ['id' => $course->id]),
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_quizportal_classboard',
+            new pix_icon('i/report', '')
+        );
+    }
+    // The student management page is an administration page (settings.php):
+    // only for those who may reset passwords site-wide.
+    if (has_capability('moodle/user:update', context_system::instance())
+            && has_capability('enrol/manual:enrol', $context)) {
+        $navigation->add(
+            'Quản lý học viên',
+            new moodle_url('/local/quizportal/students.php', ['id' => $course->id]),
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_quizportal_students',
+            new pix_icon('i/users', '')
+        );
+    }
+}
 
 /**
  * Serve a paper's Listening recording.

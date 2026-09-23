@@ -24,6 +24,33 @@ $ADMIN->add('courses', new admin_externalpage(
     'local/quizportal:importtests'
 ));
 
+// A class in one go: course, accounts, enrolments, papers. The page also
+// checks moodle/user:create, since it makes accounts.
+$ADMIN->add('courses', new admin_externalpage(
+    'local_quizportal_newclass',
+    'Tạo lớp TOEIC',
+    new moodle_url('/local/quizportal/newclass.php'),
+    'moodle/course:create'
+));
+
+// The students of a class: add more, reset a password to the date of birth,
+// move a student to another class. Resetting passwords of accounts site-wide
+// is moodle/user:update; the page checks the enrolment capabilities as it goes.
+$ADMIN->add('courses', new admin_externalpage(
+    'local_quizportal_students',
+    'Quản lý học viên',
+    new moodle_url('/local/quizportal/students.php'),
+    'moodle/user:update'
+));
+
+// Every class board on the site. Teachers open their own from the course menu.
+$ADMIN->add('courses', new admin_externalpage(
+    'local_quizportal_classes',
+    'Các lớp luyện TOEIC',
+    new moodle_url('/local/quizportal/classlist.php'),
+    'local/quizportal:viewclassboard'
+));
+
 // Site-wide, and it rewrites every score already shown: administrators only.
 $ADMIN->add('courses', new admin_externalpage(
     'local_quizportal_scale',

@@ -9,15 +9,17 @@
 /**
  * Throwaway course for the exam page end-to-end test (see README.md).
  *
- *   php fixture.php setup [--dir=PATH]   course "qptest", users qp_student / qp_teacher,
- *                                        a paper imported from PATH, visible
+ *   php fixture.php setup [--dir=PATH]   course "qptest", users qp_student / qp_teacher
+ *                                        and qp_hv1-5, a paper imported from PATH, visible
  *   php fixture.php admin-on | admin-off make qp_teacher a site admin, or stop it being
  *                                        one (scale_test.js, for the admin-only scale.php)
+ *   php fixture.php second-class         class "qptest_mv" with a copy of the paper, no
+ *                                        students (students_test.js moves one into it)
  *   php fixture.php teardown             delete all of it, recycle bin copies included
  *
  * Kept apart from the real course so no real student ever sees the test paper,
  * and so the test can move the Listening clock of attempts nobody cares about.
- * The two accounts share a fixed password: never leave them on a live site.
+ * The accounts share a fixed password: never leave them on a live site.
  *
  * @package    local_quizportal
  * @copyright  2026 PTEducation
@@ -39,6 +41,20 @@ const QPTEST_PASSWORD = 'Qp-Test-2026!';
 
 /** Course short name the fixture owns. Nothing else on the site may use it. */
 const QPTEST_COURSE = 'qptest';
+
+/**
+ * Every account the fixture makes: username => [role, first name, last name].
+ * qp_hv1-5 fill the class board (class_check.php); teardown deletes them all.
+ */
+const QPTEST_USERS = [
+    'qp_student' => ['student', 'QP', 'Học viên thử'],
+    'qp_teacher' => ['editingteacher', 'QP', 'Giáo viên thử'],
+    'qp_hv1' => ['student', 'An', 'Lớp Thử'],
+    'qp_hv2' => ['student', 'Bình', 'Lớp Thử'],
+    'qp_hv3' => ['student', 'Chi', 'Lớp Thử'],
+    'qp_hv4' => ['student', 'Dũng', 'Lớp Thử'],
+    'qp_hv5' => ['student', 'Ê', 'Lớp Thử'],
+];
 
 [$options, $unrecognised] = cli_get_params(
     ['dir' => 'D:/Learn/lam_viec/moodle/De_1', 'workbook' => 'DE_01.xlsx'],
@@ -64,6 +80,22 @@ function qptest_set_admin(bool $admin): void {
     set_config('siteadmins', implode(',', $admins));
 }
 
+if ($mode === 'second-class') {
+    // A class for students_test.js to move a student into, never a real one:
+    // a copy of the fixture paper, nobody in it. qptest_mv goes with teardown.
+    $fixture = $DB->get_record('course', ['shortname' => QPTEST_COURSE], '*', MUST_EXIST);
+    $quizid = $DB->get_field('quiz', 'id', ['course' => $fixture->id], MUST_EXIST);
+    $cm = get_coursemodule_from_instance('quiz', $quizid, $fixture->id, false, MUST_EXIST);
+    $report = \local_quizportal\local\class_builder::build((object) [
+        'fullname' => 'QP-TEST — lớp đích chuyển lớp (xoá được)',
+        'shortname' => QPTEST_COURSE . '_mv',
+        'category' => (int) $fixture->category,
+        'visible' => true,
+    ], \local_quizportal\local\roster::parse(''), [], [$cm->id => ['open' => 0, 'close' => 0]]);
+    cli_writeln("course {$report['courseid']}");
+    exit(0);
+}
+
 if ($mode === 'admin-on' || $mode === 'admin-off') {
     qptest_set_admin($mode === 'admin-on');
     cli_writeln($mode === 'admin-on' ? 'qp_teacher là site admin (tạm thời).' : 'Đã gỡ quyền site admin của tài khoản thử.');
@@ -74,19 +106,29 @@ if ($mode === 'teardown') {
     // First: delete_user() refuses to delete a local site admin, and would leave
     // an administrator with a published password behind without a word.
     qptest_set_admin(false);
-    if ($course = $DB->get_record('course', ['shortname' => QPTEST_COURSE])) {
+    // Also qptest_r, the course backup_check.php restores into, and qptest_1,
+    // _2...: what a restore calls a course whose short name is already taken,
+    // should backup_check.php stop half way.
+    $params =['fixture' => QPTEST_COURSE, 'derived' => $DB->sql_like_escape(QPTEST_COURSE . '_') . '%'];
+    foreach ($DB->get_records_select('course', $DB->sql_like('shortname', ':derived') . ' OR shortname = :fixture',
+            $params) as $course) {
         ob_start();
         delete_course($course, false);
         ob_end_clean();
-        cli_writeln('Đã xoá khoá ' . $course->id);
+        cli_writeln('Đã xoá khoá ' . $course->id . ' (' . $course->shortname . ')');
     }
     // delete_course() leaves a full copy in the category recycle bin when that
     // bin is on, as it is on this site.
-    foreach ($DB->get_records('tool_recyclebin_category', ['shortname' => QPTEST_COURSE]) as $item) {
+    foreach ($DB->get_records_select('tool_recyclebin_category',
+            $DB->sql_like('shortname', ':derived') . ' OR shortname = :fixture', $params) as $item) {
         (new \tool_recyclebin\category_bin($item->categoryid))->delete_item($item);
-        cli_writeln('Đã xoá bản sao trong thùng rác #' . $item->id);
+        cli_writeln('Đã xoá bản sao trong thùng rác #' . $item->id . ' (' . $item->shortname . ')');
     }
-    foreach (['qp_student', 'qp_teacher'] as $username) {
+    // Every qp_ account: the fixed ones, and those newclass_check.php makes
+    // through the new-class page (user name = email, qp_new1@example.invalid).
+    $accounts = $DB->get_fieldset_select('user', 'username',
+        $DB->sql_like('username', ':prefix') . ' AND deleted = 0', ['prefix' => $DB->sql_like_escape('qp_') . '%']);
+    foreach ($accounts as $username) {
         if ($user = $DB->get_record('user', ['username' => $username, 'deleted' => 0])) {
             delete_user($user);
             if ($DB->record_exists('user', ['id' => $user->id, 'deleted' => 0])) {
@@ -114,12 +156,12 @@ $course = create_course((object) [
 ]);
 
 $instance = $DB->get_record('enrol', ['courseid' => $course->id, 'enrol' => 'manual'], '*', MUST_EXIST);
-foreach (['qp_student' => 'student', 'qp_teacher' => 'editingteacher'] as $username => $role) {
+foreach (QPTEST_USERS as $username => [$role, $firstname, $lastname]) {
     $user = (object) [
         'username' => $username,
         'password' => QPTEST_PASSWORD,
-        'firstname' => 'QP',
-        'lastname' => $role === 'student' ? 'Học viên thử' : 'Giáo viên thử',
+        'firstname' => $firstname,
+        'lastname' => $lastname,
         'email' => $username . '@example.invalid',
         'auth' => 'manual',
         'confirmed' => 1,

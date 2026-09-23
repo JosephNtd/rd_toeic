@@ -82,5 +82,14 @@ function xmldb_local_quizportal_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026092200, 'local', 'quizportal');
     }
 
+    if ($oldversion < 2026092202) {
+
+        // The "Ngày sinh" profile field: "reset the password" means back to the
+        // date of birth, so the date has to be kept (see birthdate).
+        \local_quizportal\local\birthdate::ensure_field();
+
+        upgrade_plugin_savepoint(true, 2026092202, 'local', 'quizportal');
+    }
+
     return true;
 }

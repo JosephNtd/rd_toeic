@@ -500,6 +500,15 @@ body.pagelayout-embedded {
     color: var(--ink-faint);
 }
 
+/* Which class the card belongs to, when the student is in more than one. */
+.quizportal-dashboard__class {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    margin: 0 0 2px;
+}
+
 .quizportal-dashboard__title { font-weight: 600; font-size: 15px; margin: 0 0 6px; }
 
 .quizportal-dashboard__meta {
@@ -1778,3 +1787,233 @@ a.quizportal-exam__btn--primary:focus { color: #fff; text-decoration: none; }
 .quizportal-scale__table input { max-width: 110px; }
 .quizportal-scale__table thead th { position: sticky; top: 0; background: var(--sheet); z-index: 1; }
 .quizportal-scale__changed { background: var(--accent-tint); }
+
+/* ===========================================================================
+   Class board (classboard.php) and class list (classlist.php).
+
+   Staff pages in the course's own layout. Ink and accent only: nothing here is
+   marked right or wrong. The four states of a cell differ in words and in
+   shape - a score, a tinted pill, a solid outline, a dashed outline.
+   =========================================================================== */
+
+.quizportal-board { color: var(--ink); }
+
+.quizportal-board__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 14px;
+}
+
+.quizportal-board__eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 4px;
+}
+
+.quizportal-board__title {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 26px;
+    margin: 0;
+}
+
+.quizportal-board__facts { margin: 4px 0 0; color: var(--ink-soft); }
+.quizportal-board__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.quizportal-board__actions .groupselector { margin: 0; }
+.quizportal-board__note { color: var(--ink-soft); font-size: 14px; max-width: 80ch; }
+
+.quizportal-board__empty {
+    padding: 22px 26px;
+    background: var(--sheet);
+    border: 1px dashed var(--line);
+}
+
+.quizportal-board__empty p:last-child { margin-bottom: 0; }
+
+/* With many papers the grid scrolls sideways inside its own box; the page never does. */
+.quizportal-board__scroll {
+    overflow-x: auto;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    margin-bottom: 32px;
+}
+
+.quizportal-board__scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.quizportal-board__grid { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+.quizportal-board__grid th,
+.quizportal-board__grid td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+.quizportal-board__grid thead th {
+    background: var(--paper);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    vertical-align: bottom;
+    white-space: nowrap;
+}
+
+.quizportal-board__grid tbody th { font-weight: 600; }
+.quizportal-board__grid tbody tr:hover > * { background: var(--paper); }
+
+/* The name stays in view while the grid scrolls sideways. */
+.quizportal-board__name {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 180px;
+    background: var(--sheet);
+}
+
+.quizportal-board__sort {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.quizportal-board__sort::after { content: " ↕"; color: var(--ink-faint); }
+[aria-sort="ascending"] > .quizportal-board__sort::after { content: " ↑"; color: var(--accent); }
+[aria-sort="descending"] > .quizportal-board__sort::after { content: " ↓"; color: var(--accent); }
+.quizportal-board__sort:hover { color: var(--ink); }
+
+.quizportal-board__score {
+    display: block;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+a.quizportal-board__score { text-decoration: none; }
+a.quizportal-board__score:hover,
+a.quizportal-board__score:focus { color: var(--accent); text-decoration: underline; }
+
+.quizportal-board__split,
+.quizportal-board__meta { display: block; font-size: 12.5px; white-space: nowrap; }
+.quizportal-board__split { color: var(--ink-soft); }
+.quizportal-board__meta { color: var(--ink-faint); }
+
+.quizportal-board__state {
+    display: inline-block;
+    font-size: 12.5px;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.quizportal-board__state.is-none { border-style: dashed; border-color: var(--ink-faint); color: var(--ink-faint); }
+.quizportal-board__state.is-inprogress { background: var(--accent-tint); color: var(--ink); }
+.quizportal-board__state.is-abandoned { border-color: var(--ink-soft); color: var(--ink-soft); }
+
+.quizportal-board__weak { white-space: nowrap; }
+
+.quizportal-board__tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    vertical-align: middle;
+}
+
+/* White on accent: 4.97:1. */
+.quizportal-board__tag.is-weakest { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.quizportal-board__grid tfoot th,
+.quizportal-board__grid tfoot td {
+    background: var(--paper);
+    border-top: 2px solid var(--ink);
+    border-bottom: 0;
+}
+
+.quizportal-board__parts { max-width: 680px; }
+
+.quizportal-board__parts h3 {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 20px;
+    margin: 0 0 6px;
+}
+
+@media (max-width: 600px) {
+    .quizportal-board__title { font-size: 22px; }
+    .quizportal-board__name { min-width: 130px; }
+    .quizportal-board__grid th,
+    .quizportal-board__grid td { padding: 8px 10px; }
+}
+
+/* ---------------------------------------------------------------------------
+   New class (newclass.php). Admin layout: Bootstrap does the rest.
+   --------------------------------------------------------------------------- */
+
+/* Columns pasted from Excel stay lined up. */
+/* Moodle puts the element's class on the form row, not on the textarea, so
+   aim at the textarea inside it - styling the row would set the label too. */
+.quizportal-newclass__roster textarea { font-family: 'Consolas', 'Courier New', monospace; font-size: 13.5px; tab-size: 24; }
+.quizportal-newclass__table { max-width: 960px; }
+.quizportal-newclass__preview { margin-bottom: 24px; }
+
+/* Printing the account list (account_sheet.mustache) hands out that and
+   nothing else. Scoped to the two pages that show it, by body id, so no other
+   page prints differently. */
+@media print {
+    #page-local-quizportal-newclass *,
+    #page-local-quizportal-students * { visibility: hidden; }
+    #page-local-quizportal-newclass .quizportal-accounts,
+    #page-local-quizportal-newclass .quizportal-accounts *,
+    #page-local-quizportal-students .quizportal-accounts,
+    #page-local-quizportal-students .quizportal-accounts * { visibility: visible; }
+    #page-local-quizportal-newclass .quizportal-accounts,
+    #page-local-quizportal-students .quizportal-accounts { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+/* ---------------------------------------------------------------------------
+   Student management (students.php). Admin layout: Bootstrap does the rest.
+   --------------------------------------------------------------------------- */
+
+.quizportal-students__chooser { margin-bottom: 20px; }
+.quizportal-students__head { margin-bottom: 14px; }
+.quizportal-students__short { font-size: 15px; font-weight: 400; color: var(--ink-soft); margin-left: 6px; }
+.quizportal-students__note { font-size: 14px; max-width: 760px; }
+/* Positioned, so the absolutely placed .sr-only column heading scrolls with
+   the table: otherwise it escapes the scroller and widens the page on a phone. */
+.quizportal-students .table-responsive { position: relative; }
+.quizportal-students__table { max-width: 1100px; }
+.quizportal-students__table td,
+.quizportal-students__table th { vertical-align: middle; }
+/* On a phone the table scrolls in its box; keep a name on one or two lines. */
+.quizportal-students__table th[scope=row] { font-weight: 600; min-width: 150px; }
+
+/* The student the panel above is about. A rule, not a tint: the muted
+   "chưa có" (ink-faint) is 4.26:1 on --accent-tint, under AA. */
+.quizportal-students__table tr.is-active > td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+
+/* A second line under a name or an address: other classes, the old user name. */
+.quizportal-students__other { display: block; font-size: 12.5px; font-weight: 400; color: var(--ink-soft); }
+.quizportal-students__other span + span::before { content: ", "; }
+
+.quizportal-students__actions { white-space: nowrap; text-align: right; }
+.quizportal-students__panel { max-width: 760px; border-color: var(--accent); }
+.quizportal-students__add { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); }
+
+.quizportal-classlist { max-width: 960px; }
+.quizportal-classlist__short { display: block; font-size: 13px; font-weight: 400; }
+.quizportal-classlist__short a { color: var(--ink-soft); }

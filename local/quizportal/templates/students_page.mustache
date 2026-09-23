@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+}}
+{{!
+    @template local_quizportal/students_page
+
+    The students of one class on students.php, each with "reset password"
+    and "move". Admin layout: Bootstrap does most of the work.
+
+    Context variables required for this template:
+    * classname, shortname, hidden, courseurl, boardurl (null when the class has no TOEIC paper)
+    * count, hasstudents, nobirthdate (how many have no date of birth on file)
+    * students - [{n, id, fullname, email, username, showusername, birthdate, hasother, otherclasses: string[],
+                   resetnote, reseturl (null when it cannot be reset here), moveurl,
+                   active (the student the reset or move panel above is about)}]
+
+    Example context (json):
+    {
+        "classname": "TOEIC 650+ K10", "shortname": "K10", "hidden": false, "courseurl": "#", "boardurl": "#",
+        "count": 2, "hasstudents": true, "nobirthdate": 1,
+        "students": [
+            {"n": 1, "id": 5, "fullname": "Nguyễn Văn An", "email": "an@gmail.com", "username": "an@gmail.com",
+             "showusername": false, "birthdate": "19/10/2004", "hasother": false, "otherclasses": [], "resetnote": "", "reseturl": "#", "moveurl": "#"},
+            {"n": 2, "id": 6, "fullname": "Trần Bình", "email": "binh@gmail.com", "username": "hv02",
+             "showusername": true, "birthdate": null, "hasother": true, "otherclasses": ["K09"], "resetnote": "", "reseturl": "#", "moveurl": "#"}
+        ]
+    }
+}}
+<section class="quizportal-students" data-region="students">
+    <div class="quizportal-students__head">
+        <h3 class="h4 mb-1">
+            {{classname}}
+            <span class="quizportal-students__short">{{shortname}}</span>
+            {{#hidden}}<span class="badge badge-secondary">Đang ẩn</span>{{/hidden}}
+        </h3>
+        <p class="mb-0">
+            <strong>{{count}}</strong> học viên
+            {{#boardurl}} · <a href="{{boardurl}}">Bảng điều khiển lớp</a>{{/boardurl}}
+            · <a href="{{courseurl}}">Mở khoá học</a>
+            · <a href="#them-hoc-vien">Thêm học viên ↓</a>
+        </p>
+    </div>
+
+    {{^hasstudents}}
+        <div class="alert alert-info">Lớp chưa có học viên nào. Thêm ở <a href="#them-hoc-vien">ô bên dưới</a>.</div>
+    {{/hasstudents}}
+
+    {{#hasstudents}}
+        {{#nobirthdate}}
+            <p class="text-muted quizportal-students__note">
+                {{nobirthdate}} học viên chưa có ngày sinh trên hệ thống (tài khoản tạo tay hoặc tạo trước 22/09/2026).
+                Khi đặt lại mật khẩu cho họ, trang sẽ hỏi ngày sinh rồi lưu lại.
+            </p>
+        {{/nobirthdate}}
+        <div class="table-responsive">
+            <table class="table table-sm quizportal-students__table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-right">#</th>
+                        <th scope="col">Họ và tên</th>
+                        <th scope="col">Đăng nhập bằng</th>
+                        <th scope="col">Ngày sinh</th>
+                        <th scope="col"><span class="sr-only">Thao tác</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#students}}
+                        <tr id="hv-{{id}}" data-userid="{{id}}"{{#active}} class="is-active" aria-current="true"{{/active}}>
+                            <td class="text-right text-muted">{{n}}</td>
+                            <th scope="row">
+                                {{fullname}}
+                                {{#hasother}}
+                                    <span class="quizportal-students__other">Cũng ở lớp: {{#otherclasses}}<span>{{.}}</span>{{/otherclasses}}</span>
+                                {{/hasother}}
+                            </th>
+                            <td>
+                                {{email}}
+                                {{#showusername}}<span class="quizportal-students__other">hoặc tên đăng nhập <code>{{username}}</code></span>{{/showusername}}
+                            </td>
+                            <td>{{#birthdate}}{{birthdate}}{{/birthdate}}{{^birthdate}}<span class="text-muted">chưa có</span>{{/birthdate}}</td>
+                            <td class="quizportal-students__actions">
+                                {{#reseturl}}<a class="btn btn-sm btn-outline-secondary" href="{{reseturl}}">Đặt lại mật khẩu</a>{{/reseturl}}
+                                {{^reseturl}}<span class="text-muted small">{{resetnote}}</span>{{/reseturl}}
+                                <a class="btn btn-sm btn-outline-secondary" href="{{moveurl}}">Chuyển lớp</a>
+                            </td>
+                        </tr>
+                    {{/students}}
+                </tbody>
+            </table>
+        </div>
+    {{/hasstudents}}
+</section>

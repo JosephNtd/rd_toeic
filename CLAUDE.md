@@ -4,7 +4,7 @@
 > không cần duyệt lại toàn bộ dự án. **Mọi phiên phải cập nhật file này trước
 > khi kết thúc** — việc đã làm, việc dang dở, việc định làm.
 
-Cập nhật lần cuối: **2026-09-22**
+Cập nhật lần cuối: **2026-09-23**
 
 ---
 
@@ -285,13 +285,12 @@ làm bài (A6) lấy URL bằng `listening::get_url()`, đừng tự ghép.**
 1. ~~Chưa ai bấm thử `import.php` bằng trình duyệt~~ — **đã thử 2026-09-22**:
    người dùng nhập `DE_01` vào khoá `#10` qua trang này (quiz `#17`, cmid 26,
    đang **hiện**; log `course_module_created` có `origin=web`, 242 câu + 242 tag).
-2. **Sao lưu / khôi phục / nhân bản đề làm MẤT file nghe và `slotmeta`.** Nút
-   *Duplicate* ở trang khoá học cũng đi qua backup/restore. Moodle có hook cho
-   plugin local (`backup/moodle2/backup_local_plugin.class.php`, gọi ở
-   `backup_stepslib.php:374`) nhưng plugin chưa dùng. **Đừng nhân bản đề** tới khi
-   viết `backup/moodle2/backup_local_quizportal_plugin.class.php` + bản restore.
-   Trang kết quả nhập đề đã cảnh báo điều này cho admin. Đề khôi phục thiếu
-   `slotmeta` thì trang làm bài từ chối chạy (báo lỗi cấu trúc), không phát sai.
+2. ~~Sao lưu / khôi phục / nhân bản đề làm mất file nghe và `slotmeta`~~ — **đã vá
+   2026-09-22** (mục "Sao lưu / khôi phục đề" bên dưới). *Đính chính ghi chú cũ:*
+   đề **không có dòng `slotmeta` nào** thì `paper::is_toeic()` = false → router
+   **không** chặn → học viên làm nó bằng trang quiz của core, như quiz thường,
+   không có âm thanh. Trang làm bài chỉ báo "lỗi cấu trúc" khi `slotmeta` có nhưng
+   lệch với đề. Bản sao lưu tạo **trước** 2026-09-22 rơi vào trường hợp thứ nhất.
 3. ~~Xoá cả khoá học để lại `slotmeta` mồ côi~~ — **đã vá 2026-09-22** (xem A6).
 
 ### A6 + A2 — Trang làm bài + audio phát một lần ✅ (2026-09-22)
@@ -506,17 +505,241 @@ khoá một chiều — cờ ở phần nghe chỉ để **xem lại sau khi n�
   accent-dark 5,76), ink-faint/tint **4,26** (link "Bỏ chọn" trong câu có cờ đổi
   sang ink-soft).
 
+### B3 — Bảng điều khiển lớp ✅ (2026-09-22)
+
+**Lớp = một khoá học** (tạm thời, tới khi B2 chốt mô hình lớp). Mỗi ô = **lượt cao
+nhất** của học viên ở đề đó — người dùng đồng ý mặc định này, giống dashboard.
+
+| File | Vai trò |
+|---|---|
+| `classes/local/class_report.php` | Dữ liệu: học viên × đề TOEIC, chấm bằng `result::for_attempts()` (một truy vấn mỗi đề), Part yếu nhất, trung bình lớp |
+| `classboard.php` + `classes/output/class_board.php` + `templates/class_board.mustache` | Trang bảng lớp, `?id=COURSE[&group=][&download=excel]` |
+| `amd/src/classboard.js` | Sắp xếp cột (bản sao y nguyên ở `amd/build/`) |
+| `classlist.php` + `templates/class_list.mustache` | Quản trị › Khoá học › **Các lớp luyện TOEIC** |
+| `lib.php` `local_quizportal_extend_navigation_course()` | Link trong menu "Xem thêm" của khoá, chỉ ở khoá có đề TOEIC |
+| `db/access.php` | Quyền mới `local/quizportal:viewclassboard` (teacher, editingteacher, manager; RISK_PERSONAL) |
+
+Plugin version **2026092201** (đã chạy upgrade — quyền mới đã có trong CSDL).
+
+- **Học viên** = ghi danh đang hoạt động + có `mod/quiz:attempt` → giáo viên và tài
+  khoản bị đình chỉ tự rơi ra. Sắp theo tên hiển thị bằng `core_collator`.
+- **Đề** = quiz có `slotmeta`, theo thứ tự trong khoá (`get_cms()`, không phải
+  `get_instances_of()` — cái sau xếp theo instance id). Quiz thường không hiện.
+- **4 trạng thái ô:** điểm (kèm Nghe/Đọc, số lượt, "đang làm lượt mới") · Đang làm ·
+  Bỏ dở · Chưa làm. Phân biệt bằng chữ + hình dạng (nền tint / viền liền / viền đứt).
+  **Không** dùng `--correct`/`--wrong` trên trang này.
+- **Part yếu nhất** chỉ tính trên các lượt cao nhất (mỗi đề một lượt), không phải
+  mọi lượt — làm một đề ba lần sẽ bị tính ba lần, và lần sau đo trí nhớ đáp án.
+- Nhóm: dùng `groups_print_course_menu()` + `groups_get_course_group()` của core; chế
+  độ nhóm tách biệt mà giáo viên không thuộc nhóm nào → danh sách rỗng.
+- Excel: `\core\dataformat::download_data(..., 'excel', ...)`, 16 cột với một đề
+  (tên, email, 5 cột mỗi đề, Part yếu nhất, 7 cột % theo Part), số lưu dạng số.
+
+**Bẫy đã kiểm chứng, đừng dẫm lại:**
+- **`$a + $b` với mảng PHP giữ khoá bên TRÁI.** `$data + ['sortvalue' => 700]` khi
+  `$data` đã có `sortvalue => ''` → giá trị mới bị bỏ âm thầm, cột điểm không sắp
+  xếp được. Test Chrome bắt được. Dùng `array_merge()` khi muốn ghi đè.
+- **Ô chọn nhóm của core chỉ tự gửi form với thao tác chuột/bàn phím thật**
+  (`accessibleChange`). `page.select()` của puppeteer không kích hoạt → test phải
+  tự `form.submit()`.
+- **Ảnh `fullPage` của puppeteer vẽ ngăn mục lục khoá học (fixed) đè lên nội dung.**
+  Trên màn hình thật không đè (đã đo). Trang có ngăn này → chụp theo khung nhìn.
+
+**Đã kiểm chứng:** trọn bộ 6 bước chạy sạch từ đầu **178/178** (trang làm bài 66,
+chấm điểm 22, bảng lớp CLI 27, trang kết quả 27, bảng quy đổi 14, bảng lớp Chrome 22).
+
+### Sao lưu / khôi phục đề ✅ (2026-09-22)
+
+`backup/moodle2/backup_local_quizportal_plugin.class.php` + `restore_local_quizportal_plugin.class.php`.
+Mọi đường core chép một quiz đều đi qua đây: **Duplicate**, **thùng rác khoá học**
+(đang bật, giữ 7 ngày), sao lưu/khôi phục, sao chép khoá, nhập từ khoá khác.
+
+- Gắn vào `module.xml` (chỗ duy nhất core cho plugin local trong một hoạt động),
+  chỉ với module `quiz` có `slotmeta`. Mang theo: các dòng `slotmeta`, file nghe
+  (`annotate_files`, item id = quiz id), và — khi có dữ liệu người dùng — `attemptstate`.
+- **Bẫy 1: `module.xml` được đọc TRƯỚC khi quiz tồn tại** (bước module tạo course
+  module, bước quiz tạo instance sau). Nên lúc đọc chỉ **cất vào thuộc tính của đối
+  tượng plugin** (core giữ nguyên đối tượng suốt quá trình khôi phục), rồi ghi ở
+  `after_restore_module()` — chạy ở `restore_final_task` bước
+  `restore_execute_after_restore`, **trước** `restore_drop_and_clean_temp_stuff`,
+  nên ánh xạ id và file tạm vẫn còn. `questionid` ánh xạ qua `'question'`,
+  file qua `'quiz'`, lượt làm qua `'quiz_attempt'`.
+- **Bẫy 2: thẻ chỉ có thuộc tính thì có thể không bao giờ tới hàm `process_*`.**
+  Bộ đọc XML chỉ gửi một thẻ khi nó có thẻ con dạng giá trị; thuộc tính lấy từ
+  thẻ cha, và việc đó lúc được lúc không (Duplicate được, khôi phục cả khoá thì
+  không — `process_quizportal_paper` không được gọi, 242 dòng mốc bị bỏ âm thầm).
+  → `<paper>` mang thêm thẻ `<quizid>`. **Thẻ nào cần đọc thì phải có ít nhất một thẻ con giá trị.**
+- **Bẫy 3 (khi viết test): khôi phục thành khoá mới lấy lại tên viết tắt của bản sao
+  lưu**, trùng thì Moodle tự đổi thành `qptest_1` → bước dọn tìm theo tên đã đặt sẽ
+  trượt, để lại bản sao cả khoá trong thùng rác danh mục (đã xảy ra 3 lần, đã xoá).
+  Đặt `course_shortname` trong kế hoạch khôi phục, và dọn theo tên thật trong DB.
+- Duplicate trong cùng khoá **dùng chung câu hỏi** với đề gốc (hành vi của core):
+  sửa một câu trong ngân hàng là cả hai đề đổi theo.
+- **Bản sao lưu cũ không cứu được:** tạo trước 2026-09-22 thì không có dữ liệu
+  TOEIC. Thùng rác khoá `#2` còn 3 mục như thế (đề `#3` cũ + 2 "ZIP TEST"), tự hết
+  hạn 28/09. Khôi phục chúng → quiz thường không âm thanh; phải nhập lại từ `.zip`.
+- Trang kết quả nhập đề đã đổi lời khuyên: nay **được** Duplicate/sao lưu.
+
+**Đã kiểm chứng** (`tools/exam_e2e/backup_check.php`, 20 phép kiểm): cả 3 đường
+đều ra đủ 242 dòng, đúng câu hỏi, cùng mã băm file nghe, qua phép kiểm của trang
+làm bài; trạng thái phần nghe đi theo lượt làm với cùng mốc thời gian. Trọn bộ 7
+bước chạy sạch **198/198**.
+
+### B2 — Trình tạo lớp ✅ (2026-09-22)
+
+Quản trị › Khoá học › **Tạo lớp TOEIC** (`newclass.php`). Một trang: tên + mã lớp,
+danh mục, giáo viên (ô tìm người dùng), danh sách học viên dán từ Excel, chọn đề
+kèm ngày mở/đóng → **Kiểm tra trước** (không tạo gì) → **Tạo lớp** → trang kết quả
+có bảng tài khoản **in được** để phát cho học viên.
+
+**Quyết định của người dùng (2026-09-22) — đừng bàn lại:**
+- **Mỗi lớp là một khoá học riêng.**
+- **Tên đăng nhập = email, mật khẩu đầu = ngày sinh DDMMYYYY** (19/10/2004 → `19102004`).
+  Người dùng ghi ví dụ "19/10/2024 → 19102004" — đã hiểu là gõ nhầm năm.
+- Lịch: **chỉ ngày mở/đóng đề**, không giới hạn lượt.
+- Mật khẩu ngày sinh **không đạt chính sách mật khẩu** của site (8 ký tự, hoa,
+  thường, số, ký tự đặc biệt). Người dùng chọn: **vẫn tạo, giữ chính sách**, không
+  bắt đổi mật khẩu lần đầu. Chính sách vẫn áp khi học viên tự đổi mật khẩu.
+- Tên hiện kiểu Việt **"Họ Tên"**; bật **đăng nhập bằng email** cho mọi tài khoản.
+
+**⚠️ Đã đổi 3 cài đặt site (nằm trong CSDL, KHÔNG có trong git — cài lại site phải đặt lại):**
+
+| Cài đặt | Giá trị | Vì sao |
+|---|---|---|
+| `fullnamedisplay` | `lastname firstname` | "Nguyễn Văn An" thay vì "An Nguyễn Văn" |
+| `alternativefullnameformat` | `lastname firstname` | **Bẫy:** giáo viên/admin (có quyền xem tên đầy đủ) dùng cài đặt THỨ HAI này; để `language` thì họ vẫn thấy tên ngược |
+| `authloginviaemail` | `1` | Học viên cũ (vd `hv01`) cũng đăng nhập bằng email. An toàn vì `allowaccountssameemail = 0` |
+
+Lệnh: `php.exe -d max_input_vars=5000 admin/cli/cfg.php --name=<tên> --set="<giá trị>"`.
+
+| File | Vai trò |
+|---|---|
+| `classes/local/roster.php` | Đọc danh sách dán vào: tab/phẩy/chấm phẩy, bỏ dòng tiêu đề, tách "Họ đệm" / "Tên" (chữ cuối), ngày sinh → mật khẩu, tìm tài khoản cũ theo email. Gom **mọi** lỗi kèm số dòng |
+| `classes/local/class_builder.php` | Tạo khoá, ghi danh, tạo tài khoản, chép đề (backup/restore hoạt động như "nhập từ khoá khác"), đặt lịch + sự kiện lịch, hiện đề. **Hỏng ở đâu cũng gỡ sạch**: xoá khoá + bản sao thùng rác + tài khoản vừa tạo |
+| `classes/form/newclass_form.php` | Form 2 nút (xem trước / tạo), cùng một validation |
+| `newclass.php` + `templates/newclass_preview.mustache`, `newclass_report.mustache` | Trang, xem trước, kết quả (lưu `$SESSION`, redirect `?done=` → F5 không tạo lần hai) |
+
+- Học viên **đã có tài khoản** (tìm theo email, rồi theo username): chỉ ghi danh,
+  **không đổi gì**, kể cả mật khẩu; dòng của họ chỉ cần email.
+- Đề chép sang lớp mới được **bật hiển thị** (đề gốc có thể đang ẩn); không đặt
+  ngày thì mở ngay, không đóng.
+- Bảng lớp nay **sắp theo tên** (An, Bình…), không theo họ: `class_report` đặt
+  `sortname` = "tên họ", cột tên của `classboard.js` sắp theo nó.
+
+**Bẫy đã kiểm chứng, đừng dẫm lại:**
+- **`user_create_user()` KIỂM chính sách mật khẩu** và ném lỗi với `19102004`. Tạo
+  tài khoản **không mật khẩu** rồi `update_internal_user_password()` (hàm này không kiểm).
+- **`trim($s, "\u{00a0}")` là cắt theo BYTE**: byte thứ hai của NBSP (`A0`) cũng là
+  byte cuối của chữ "à" → "Hà" bị cắt hỏng. Thay nguyên cụm NBSP bằng `str_replace` trước.
+- Nhận dòng tiêu đề phải **chặt** (ô đầu đúng là "Email"): quy tắc "có chữ email" đã
+  nuốt âm thầm dòng lỗi `not-an-email`. Test bắt được.
+- `class` gắn cho một phần tử form Moodle nằm ở **khung bao**, không phải thẻ
+  `textarea` → CSS phải là `.lớp textarea`; đặt lên khung thì nhãn cũng đổi font.
+- Thử đăng nhập sai từ CLI **tăng bộ đếm đăng nhập sai** của tài khoản thật
+  (`login_failed_count_since_success`) — đã xoá cho `hv01`. Site tắt khoá tài khoản
+  (`lockoutthreshold = 0`) nên vô hại, nhưng đừng thử trên tài khoản thật.
+
+~~Còn mở: tên lớp trên thẻ đề; thêm học viên vào lớp đã có~~ — **cả hai xong
+2026-09-22** (mục kế tiếp).
+
+**Đã kiểm chứng:** trọn bộ 9 bước chạy sạch **242/242** (tạo lớp CLI 30, tạo lớp
+Chrome 14, cộng 198 của các bước cũ).
+
+### Tên lớp trên thẻ đề + B4 — Quản lý học viên ✅ (2026-09-22)
+
+**Tên lớp trên thẻ đề:** học viên học **từ hai lớp** thì mỗi thẻ đề có một dòng tên
+lớp (tên khoá học) phía trên tên đề — `dashboard_repository::get_for_user()` đặt
+`classlabel`. Học một lớp thì không: tên lớp đã ở thanh trên cùng, lặp lại trên mọi
+thẻ chỉ thêm nhiễu. (Thanh trên cùng ẩn tên lớp ở ≤ 600px — việc cũ, chưa đổi.)
+
+**B4:** Quản trị › Khoá học › **Quản lý học viên** (`students.php`). Lối vào khác:
+menu "Xem thêm" của khoá học (chỉ admin), link dưới tên lớp ở "Các lớp luyện TOEIC",
+nút trên trang kết quả tạo lớp. Một trang: chọn lớp → danh sách học viên (ngày
+sinh, lớp khác đang học) với nút **Đặt lại mật khẩu** / **Chuyển lớp** trên từng
+dòng (mở khung ngay trên danh sách, dòng đó được đánh dấu) → ô **Thêm học viên**
+ở cuối, cùng cách dán danh sách + "Kiểm tra trước" như tạo lớp → bảng tài khoản in được.
+
+| File | Vai trò |
+|---|---|
+| `classes/local/class_members.php` | `students()`, `plan()` (mới / ghi danh / đã trong lớp / quay lại lớp), `add()`, `reset_password()`, `move()`, `cannot_reset()`, `cannot_move()`. Tự kiểm quyền |
+| `classes/local/birthdate.php` | Ngày sinh ở trường hồ sơ `ngaysinh`: `ensure_field()`, `get()`/`get_many()`, `set()`, `password()` |
+| `students.php` + `classes/form/{addstudents,resetpassword,movestudent}_form.php` | Trang + 3 form |
+| `templates/students_page`, `students_preview`, `students_added.mustache` | Giao diện |
+| `templates/account_sheet.mustache` | Bảng tài khoản in được — **tách từ `newclass_report`**, hai trang dùng chung. Class CSS đổi `quizportal-newclass__print` → `quizportal-accounts` |
+| `db/install.php` (mới) + bước upgrade `2026092202` | Tạo trường hồ sơ "Ngày sinh" |
+| `class_builder::enrol_students()` | Vòng "tạo tài khoản + ghi danh" tách ra, B2 và B4 dùng chung. Tài khoản mới **lưu ngày sinh** |
+
+Plugin version **2026092202** (đã chạy upgrade — trường hồ sơ đã có, đã kiểm).
+
+**Mặc định Claude tự chọn — người dùng CHƯA duyệt, đổi được:**
+- **Lưu ngày sinh** vào trường hồ sơ Moodle "Ngày sinh" (`ngaysinh`, danh mục
+  "PTEducation"), dạng chữ `DD/MM/YYYY`, **học viên không sửa được**, chỉ học viên +
+  admin thấy. Trước đó ngày sinh chỉ biến thành mật khẩu rồi bỏ đi → không có gì để
+  "đặt lại về". Trường hồ sơ core thì xoá tài khoản tự dọn, upload người dùng hàng
+  loạt điền được (`profile_field_ngaysinh`), admin sửa được ở trang hồ sơ. Chữ chứ
+  không phải `datetime`: timestamp nửa đêm đọc ở múi giờ khác thành ngày hôm trước.
+- Tài khoản **chưa có ngày sinh** (`hv01`–`hv10` và mọi tài khoản tạo trước hôm nay):
+  lúc đặt lại mật khẩu, trang hỏi ngày sinh rồi lưu cho lần sau.
+- **Chuyển lớp = đình chỉ ghi danh ở lớp cũ, không xoá.** Lượt làm, điểm, nhóm ở lớp
+  cũ còn nguyên; bảng lớp và dashboard chỉ đọc ghi danh đang hoạt động nên tự thôi
+  hiện lớp cũ. Chuyển ngược về → bật lại đúng ghi danh cũ, thấy lại bài cũ.
+- Thêm học viên **đã có tài khoản**: như B2, chỉ ghi danh, không đổi gì (có ghi ngày
+  sinh trên dòng cũng không lưu).
+- Đặt lại mật khẩu **không** đá phiên đang đăng nhập (đang thi ở máy khác thì không
+  văng ra), **có** xoá bộ đếm đăng nhập sai. Không bắt đổi mật khẩu lần đầu (như B2).
+- Trang chỉ dành cho admin (`moodle/user:update` cấp hệ thống).
+
+**Luật — đừng phá:**
+- "Học viên của lớp" = `class_report::load_students()` (nay `public`) — **một** định
+  nghĩa cho bảng lớp và trang học viên. **Đừng dùng `is_enrolled($ctx, $uid,
+  'mod/quiz:attempt')`**: site admin có mọi quyền nên hàm trả `true` cho admin được
+  ghi danh làm giáo viên (đã kiểm ở khoá `#10`). `get_enrolled_users()` lọc theo vai
+  trò nên không dính.
+- Thêm học viên chạy trong **một transaction** (hỏng giữa chừng: không còn tài khoản
+  nào). B2 vẫn gỡ tay như cũ vì tạo khoá + backup/restore không bọc transaction được.
+
+**Bẫy đã kiểm chứng, đừng dẫm lại:**
+- **`moodleform` nhận action là `moodle_url` thì mất anchor**: `MoodleQuickForm` gọi
+  `out_omit_querystring()`, tham số thành input ẩn, `#them-hoc-vien` rơi mất → bấm
+  "Kiểm tra trước" xong trang mở ở đầu, còn bảng xem trước nằm tít dưới. Truyền
+  **chuỗi** `$url->out(false)`.
+- **`.sr-only` (`position: absolute`) trong `.table-responsive` thoát khỏi khung cuộn**
+  và kéo cả trang rộng thêm 32px ở 390px. Cho khung `position: relative`. Tiện thể
+  bắt được `classlist.php` (B3) tràn 11px vì bảng không có khung cuộn — đã vá.
+- Heredoc **lần thứ 6**: `\s` trong Python chạy qua heredoc → chuỗi cũ không khớp.
+  Lần này `assert chuỗi_cũ in s` chặn trước khi ghi nên không hỏng gì. **Script sửa
+  file nào cũng phải assert chuỗi cũ có mặt.**
+- Upgrade in ra một loạt `auth_db/field_*_profile_field_ngaysinh` — bình thường, core
+  tạo cho mọi trường hồ sơ mới.
+
+**Đã kiểm chứng:** trọn bộ **11 bước chạy sạch 312/312** từ fixture mới (trang làm
+bài 66, chấm điểm 22, bảng lớp CLI 27, sao lưu 20, tạo lớp CLI 30, **quản lý học viên
+CLI 40**, trang kết quả 27, bảng quy đổi 14, bảng lớp Chrome 22, tạo lớp Chrome 14,
+**quản lý học viên Chrome 30**). Ảnh chụp đã duyệt ở 1366px và 390px. Sau teardown:
+`slotmeta` chỉ đề `#9`/`#17`, `attemptstate` chỉ 3 lượt của `hv01`, 0 tài khoản `qp_`,
+0 khoá `qptest*`, thùng rác trống, `siteadmins` = 2, bảng quy đổi mặc định, 0 dòng
+`user_info_data` (chưa tài khoản thật nào có ngày sinh).
+
 ## 4. Việc tiếp theo
 
 Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến nghị:
 
 | Ưu tiên | Việc | Ghi chú |
 |---|---|---|
-| ~~1~~ ✅ | ~~B1: Trình nhập đề TOEIC hàng loạt~~ — **xong 2026-09-21** (xem mục 3) | Trang nhập đề, importer, phục vụ file nghe. Còn treo: backup/restore |
+| ~~1~~ ✅ | ~~B1: Trình nhập đề TOEIC hàng loạt~~ — **xong 2026-09-21** (xem mục 3) | Trang nhập đề, importer, phục vụ file nghe. Backup/restore xong 22/09 |
 | ~~2~~ ✅ | ~~A6 + A2: Trang làm bài + audio phát một lần~~ — **xong 2026-09-22** (xem mục 3) | Còn treo: người thật làm thử một đề trọn vẹn có tai nghe; Safari/Firefox |
 | ~~3~~ ✅ | ~~A7 + A3: Trang kết quả + quy đổi điểm 10–990~~ — **xong 2026-09-22** (xem mục 3) | Còn treo: trung tâm có muốn thay bảng Oxford bằng bảng riêng không (sửa ở `scale.php`) |
-| **4 — TIẾP THEO** | **B2 + B3: Wizard tạo lớp + bảng điều khiển lớp** | Bảng điều khiển lớp dùng lại được `result::for_attempts()` (chấm hàng loạt, một câu SQL) và `result->parts` (điểm yếu theo Part) |
-| 5 | Track C: dọn dẹp | |
+| ~~4a~~ ✅ | ~~B3: Bảng điều khiển lớp~~ — **xong 2026-09-22** (xem mục 3) | Còn mở: link tới bảng lớp từ dashboard của cổng (giáo viên đăng nhập qua cổng đang rơi vào dashboard học viên) — **việc của giáo viên, để sau** |
+| ~~4b~~ ✅ | ~~Sao lưu/khôi phục cho plugin~~ — **xong 2026-09-22** (xem mục 3) | Chép đề sang lớp khác nay an toàn (Duplicate / sao lưu / sao chép khoá) |
+| ~~4c~~ ✅ | ~~B2: Wizard tạo lớp~~ — **xong 2026-09-22** (xem mục 3) | Tên lớp trên thẻ đề: xong cùng B4 |
+| ~~5~~ ✅ | ~~B4: Quản lý học viên một trang~~ — **xong 2026-09-22** (xem mục 3) | Còn treo: người dùng duyệt các mặc định (lưu ngày sinh, chuyển lớp = đình chỉ) |
+| **6 — TIẾP THEO** | Track C: dọn dẹp | Hỏi người dùng trước khi bắt đầu |
+| **Song song** | **Đưa lên mạng** — xem `moodle-ptedu-deploy.md` | 3 việc gấp, đều miễn phí: push code lên private repo (code **chỉ có trên máy này**), đo băng thông file nghe, thử Safari/iPhone |
+
+> **Mọi thứ về giáo viên — để sau** (người dùng dặn 2026-09-22): chức năng và giao
+> diện cho giáo viên (lối vào cho giáo viên đăng nhập qua cổng, cho giáo viên tự
+> nhập đề / quản lý học viên…) **chưa làm, chưa đề xuất**. Người dùng sẽ báo khi
+> nào bắt đầu. Các trang quản trị hiện chỉ dành cho admin.
 
 ### Sự thật đã kiểm chứng — đừng tra lại
 
@@ -580,9 +803,10 @@ Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến ngh
 |---|---|
 | **`CLAUDE.md`** ← đang đọc | Trạng thái tổng, môi trường, việc tiếp theo |
 | `moodle-ptedu-roadmap.md` | Lộ trình đầy đủ 3 track + chẩn đoán thiết kế |
+| `moodle-ptedu-deploy.md` | **Đưa lên mạng**: chọn server cho 200 người thi cùng lúc, nút thắt file nghe 42 MB, checklist 5 giai đoạn |
 | `local/quizportal/PROGRESS.md` | Chi tiết cổng học viên: dữ liệu thật/giả, lỗi đã vá, nợ kỹ thuật |
 | `local/quizportal/tools/README.md` | Công cụ dò mốc `audio_start` tự động + soát lời thoại bằng audio (cần Python + `faster-whisper`) |
-| `local/quizportal/tools/exam_e2e/README.md` | Test bằng Chrome thật: trang làm bài, chấm điểm, trang kết quả, trang sửa bảng quy đổi (105 phép kiểm, cần Node + `npm install`), kèm script dựng/xoá khoá thử |
+| `local/quizportal/tools/exam_e2e/README.md` | Bộ test 11 bước (CLI + Chrome thật): trang làm bài, chấm điểm, trang kết quả, bảng quy đổi, bảng lớp, sao lưu đề, tạo lớp, quản lý học viên. Cần Node + `npm install`; kèm script dựng/xoá khoá thử |
 | `local/quizportal/samples/HUONG-DAN-NHAP-DE.md` | Hướng dẫn nhập đề cho người nhập liệu |
 | `moodle-dashboard-design-notes.md` | Ghi chú thiết kế gốc (bảng màu cũ navy/đỏ — **đã thay**, giữ để tham chiếu cấu trúc 7 Part) |
 
@@ -608,7 +832,54 @@ Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến ngh
 
 ## Nhật ký
 
-### 2026-09-22 (phiên 10) — báo cáo tiến độ + cờ đánh dấu
+### 2026-09-23 (phiên 12) — kế hoạch đưa lên mạng
+- Người dùng hỏi: mua server nào cho **200 học viên thi cùng lúc**, và cần làm gì để
+  public dự án. Trả lời + viết thành **`moodle-ptedu-deploy.md`** (checklist 5 giai
+  đoạn, tích dần). Không sửa code.
+- **Phát hiện chính: nút thắt là file nghe, không phải CPU.** `Test_01.mp3` =
+  44.109.018 byte (42 MB, 128 kbps) và **đi qua PHP** vì `local_quizportal_pluginfile()`
+  phải chạy `can_listen()` mỗi request. Nếu trình duyệt stream đúng nhịp thì 200 người
+  chỉ ~26 Mbps; nếu tải nguyên file trong 5 phút thì ~235 Mbps. **Chênh 20 lần, chưa
+  ai đo.** Khuếch đại thêm vì `send_stored_file(..., 0, 0, ...)` đặt lifetime 0 →
+  không cache → mỗi lần F5 là tải lại.
+- **Đã xác minh `$CFG->xsendfile` dùng được** với code hiện tại: `send_stored_file()`
+  → `file_system::supports_xsendfile()` (`lib/filestorage/file_system.php:499`). Bật
+  nó thì PHP không bị giữ worker suốt lúc truyền. Gần như bắt buộc ở quy mô này.
+- Cách giảm tải thứ hai, không đổi code: mp3 **128 kbps stereo → 64 kbps mono** cắt
+  một nửa băng thông (đề TOEIC chỉ là giọng nói).
+- **Rủi ro đặc thù đã ghi vào file mới:** đồng hồ nghe chạy theo server
+  (`bây giờ − listenstart`) → server sập 10 phút giữa phần nghe là cả lớp mất vĩnh
+  viễn 10 phút băng. `cli/listening_clock.php` chỉ sửa được **từng học viên một**.
+  → Nên thêm lệnh "lùi băng cho cả lớp" trước khi public (ước lượng nửa buổi).
+- Xác nhận yêu cầu Moodle 4.5 từ tài liệu chính thức: **PHP 8.1–8.3** (64-bit,
+  ext `sodium`), MariaDB ≥ 10.6.7 / MySQL ≥ 8.0 / PostgreSQL ≥ 13. 4.5 là LTS nhưng
+  **đã hết hỗ trợ sửa lỗi chung**, chỉ còn vá bảo mật.
+- Đề xuất cấu hình: **8 vCPU / 16 GB / 200 GB NVMe, đặt máy ở Việt Nam** (cáp biển
+  đứt = thảm hoạ với bài thi có đồng hồ theo server). Đỉnh CPU là lúc 200 người cùng
+  bấm "Bắt đầu" (render 123 câu/trang), không phải lúc đang thi → chia ca lệch 2–3 phút.
+- **3 việc gấp nhất, đều miễn phí:** push code lên private repo (hiện code CHỈ có trên
+  máy này), đo băng thông file nghe bằng DevTools, thử Safari/iPhone (chưa từng thử —
+  nếu Safari chặn autoplay thì phần nghe hỏng hoàn toàn trên iPhone/Mac).
+- **Vẫn chưa commit git** (B3, sao lưu, B2, B4 từ các phiên trước, cộng file mới này).
+
+### 2026-09-22 (phiên 11) — tên lớp trên thẻ đề, B4 quản lý học viên
+- Báo cáo tiến độ. **Người dùng yêu cầu 2 việc:** tên lớp trên thẻ đề (học viên học
+  2 lớp) và B4 (thêm học viên vào lớp có sẵn, đặt lại mật khẩu về ngày sinh, chuyển
+  lớp). **Dặn: mọi thứ về giáo viên để sau**, họ sẽ báo khi nào làm.
+- Cả hai xong (mục 3). Plugin **2026092202**, đã upgrade: tạo trường hồ sơ "Ngày sinh"
+  (`user_info_field` #1, danh mục `PTEducation` #1). Đây là thay đổi CSDL duy nhất.
+- Sửa phần B2: `class_builder::enrol_students()` tách ra dùng chung, tài khoản mới lưu
+  ngày sinh, bảng tài khoản in được tách thành `account_sheet.mustache`, trang kết quả
+  tạo lớp có nút "Quản lý học viên". `newclass_test.js` đổi selector + nay kiểm tên lớp
+  trên thẻ đề.
+- Vá kèm: `classlist.php` tràn ngang 11px ở 390px (từ B3).
+- Bộ test: thêm `students_check.php` (40), `students_test.js` (30), `fixture.php
+  second-class` (lớp đích thứ hai để thử chuyển lớp — **không bao giờ** chuyển tài khoản
+  thử vào lớp thật).
+- **Chưa hỏi người dùng** về các mặc định đã chọn (mục 3, B4). **Chưa commit git**
+  (B3, sao lưu, B2, B4 đều đang chờ).
+
+### 2026-09-22 (phiên 10) — báo cáo tiến độ, cờ đánh dấu, git, B3 bảng lớp, sao lưu đề, B2 tạo lớp
 - Báo cáo: kiểm tra DB — site có 3 khoá (`#1`, `#2`, `#10`), 3 quiz (`#1 TEST`,
   `#9` ẩn, `#17` hiện), đúng 1 lượt làm thật (`#30`, xem mục 4 "Còn dang dở").
   `import.php` đã được thử bằng trình duyệt (mục 3, "Còn treo sau B1").
@@ -623,6 +894,22 @@ Lộ trình đầy đủ: **`moodle-ptedu-roadmap.md`**. Thứ tự khuyến ngh
   liệu). Loại `tools/__pycache__/` (thêm `tools/.gitignore`); `node_modules/` và
   `shots/` của bộ test đã có `.gitignore` sẵn. Rà mật khẩu: chỉ có mật khẩu của hai
   tài khoản test tạm (`fixture.php`), bị xoá sau mỗi lần chạy. Chưa push đâu cả.
+- Tên repo đề xuất `ptedu-toeic` (một repo cả site, private) — **người dùng chưa tạo
+  repo GitHub**, chưa push.
+- **B3 — bảng điều khiển lớp: xong** (mục 3). Version 2026092201, đã upgrade. Test
+  trọn bộ 178/178, teardown sạch: `slotmeta` chỉ đề `#9`/`#17`, 0 tài khoản `qp_`,
+  0 nhóm, thùng rác trống, `siteadmins` = 2, bảng quy đổi mặc định.
+- Thấy trong DB: `hv01` có thêm lượt `#36`, `#37` (17:28, 17:32) — người dùng tự thử
+  nút cờ. Bảng lớp khoá `#10` nay có dữ liệu thật để xem.
+- **Sao lưu/khôi phục đề: xong** (mục 3). Không đổi CSDL, không bump version.
+  Lần đầu khôi phục cả khoá mất 242 dòng mốc (bẫy thẻ chỉ có thuộc tính) — test bắt
+  được, đã vá. Test để lại 3 bản sao khoá `qptest_1` trong thùng rác danh mục — đã
+  xoá, và sửa cả test lẫn `fixture.php teardown` để không lặp lại. Trọn bộ 198/198.
+- **B2 — trình tạo lớp: xong** (mục 3). Người dùng chốt: lớp = khoá; username = email,
+  mật khẩu = ngày sinh DDMMYYYY; lịch chỉ mở/đóng; giữ chính sách mật khẩu; tên
+  "Họ Tên"; đăng nhập bằng email. **Đã đổi 3 cài đặt site** (bảng ở mục 3 — không có
+  trong git). Plugin không đổi CSDL/version. Trọn bộ 9 bước **242/242**.
+- **B3, sao lưu/khôi phục và B2 chưa commit git.**
 
 ### 2026-09-22 (phiên 9) — A7 + A3: trang kết quả + quy đổi điểm
 - Tìm bảng quy đổi: sách ETS của đề 1 không kèm bảng; chọn bảng Oxford English

@@ -16,7 +16,8 @@
     * fullname, initials, logouturl - current user display info.
     * stats - {total, completed, average|null}.
     * hasquizzes - bool.
-    * quizzes - array of rows, see local_quizportal\local\dashboard_repository::build_row().
+    * quizzes - array of rows, see local_quizportal\local\dashboard_repository::build_row(),
+      plus idx and classlabel (the class name, only for a student in more than one class).
 }}
 <div class="quizportal-dashboard">
 
@@ -72,6 +73,7 @@
                 <div class="quizportal-dashboard__row" data-status="{{status}}">
                     <div class="quizportal-dashboard__idx">{{idx}}</div>
                     <div>
+                        {{#classlabel}}<p class="quizportal-dashboard__class">{{classlabel}}</p>{{/classlabel}}
                         <p class="quizportal-dashboard__title">{{title}}</p>
                         <div class="quizportal-dashboard__meta">
                             <span>{{totalquestions}} câu</span>

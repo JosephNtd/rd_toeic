@@ -12,3 +12,4 @@ $string['username'] = 'Username';
 $string['password'] = 'Password';
 $string['login'] = 'Sign in';
 $string['quizportal:importtests'] = 'Import TOEIC tests';
+$string['quizportal:viewclassboard'] = 'View the TOEIC class board';

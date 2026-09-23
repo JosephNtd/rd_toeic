@@ -52,9 +52,13 @@ class dashboard_repository {
 
         usort($quizzes, fn($a, $b) => $a['sortkey'] <=> $b['sortkey']);
 
+        // A student in two classes has two "Đề 01" cards: name the class on
+        // each. With one class the header already says which (index.php).
+        $manyclasses = count($courses) > 1;
         $idx = 1;
         foreach ($quizzes as &$row) {
             $row['idx'] = str_pad((string) $idx, 2, '0', STR_PAD_LEFT);
+            $row['classlabel'] = $manyclasses ? $row['coursename'] : null;
             $idx++;
         }
         unset($row);

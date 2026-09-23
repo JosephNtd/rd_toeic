@@ -34,4 +34,17 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // The class board: every student's scores in a course. Whoever teaches the
+    // course, as with core's quiz reports; students never.
+    'local/quizportal:viewclassboard' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

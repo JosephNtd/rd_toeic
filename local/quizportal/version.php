@@ -9,5 +9,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_quizportal';
-$plugin->version = 2026092200;
+$plugin->version = 2026092202;
 $plugin->requires = 2024100700;
